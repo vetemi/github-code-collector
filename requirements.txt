@@ -1,0 +1,2 @@
+langdetect>=1.0.7
+python-git
