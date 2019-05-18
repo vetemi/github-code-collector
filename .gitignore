@@ -1,5 +1,6 @@
 /bin/
 /lib/
-/src/__pycache__
+/**/__pycache__
 /.vscode/
-
+/resources/access-tokens.txt
+/resources/application.ini
