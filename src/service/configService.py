@@ -4,12 +4,12 @@ from pathlib import Path
 
 class ConfigService:
 
-  appIni = 'resources/application.ini'
-  appDefaultIni = 'resources/application.ini'
+  appIni = '/resources/application.ini'
+  appDefaultIni = 'resources/application-default.ini'
   
-  __init__(self):
+  def __init__(self):
     self.config = configparser.ConfigParser()
-    if Path(appIni).is_file():
-      self.config.read(appIni)
+    if Path(ConfigService.appIni).is_file():
+      self.config.read(ConfigService.appIni)
     else:
-      self.config.read(appDefaultIni)
+      self.config.read(ConfigService.appDefaultIni)

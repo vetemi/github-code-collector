@@ -1,10 +1,14 @@
-import requests
+from service.configService import ConfigService
 import gzip
+import requests
 
-baseUrl = 'https://data.gharchive.org/'
+class ArchiveService:
 
-def retrieveData(date):
-  response = requests.get(baseUrl + date.strftime("%Y-%m-%d-%H") + '.json.gz')
+  def __init__(self):
+    configService = ConfigService()
+    self.baseUrl = configService.config['Github']['archive-url']
 
-  if response.status_code == 200:
-    return gzip.decompress(response.content)
+  def retrieveData(self, date):
+    response = requests.get(self.baseUrl + date.strftime("%Y-%m-%d-%-H") + '.json.gz')
+    if response.status_code == 200:
+      return gzip.decompress(response.content)

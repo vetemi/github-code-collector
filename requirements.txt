@@ -1,2 +1,3 @@
+requests
 langdetect
 mysql-connector

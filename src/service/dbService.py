@@ -1,17 +1,30 @@
-import configparser
+from service.configService import ConfigService
 
 import mysql.connector
 
-from service.configService import ConfigService
-
 class DbService:
 
-  __init__(self):
+  def __init__(self):
     configService = ConfigService()
-    self.db = mysql.connector.connect(
+    self.codeDb = mysql.connector.connect(
       host=configService.config['Datasource']['url'],
       user=configService.config['Datasource']['user'],
-      passwd=configService.config['Datasource']['password'],
-      database=configService.config['Datasource']['database']
+      passwd=configService.config['Datasource']['password']
     )
-    self.mycursor = mydb.cursor()
+    self.dbCursor = self.codeDb.cursor()
+
+    if configService.config.getboolean('Datasource', 'drop-first'):
+      self.dbCursor.execute("DROP DATABASE codeDB")
+      self.codeDb.commit()
+      self.dbCursor.execute("CREATE DATABASE codeDB")
+      self.codeDb.commit()
+
+      with open(configService.config['Datasource']['schema']) as schema:
+        self.dbCursor.execute(schema.read(), multi=True)
+        self.codeDb.commit()
+
+  def addRepo(self, repo):
+    return None
+
+
+

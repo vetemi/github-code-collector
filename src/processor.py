@@ -1,23 +1,26 @@
+from service.archiveService import ArchiveService
 from datetime import datetime, timedelta
+from service.dbService import DbService
 import json
-
-import service.archiveService
 from service.githubService import GithubService
 
-# oldest date 2011-02-12-0
-archiveDate = datetime(2015, 2, 12, 0)
-endDate = datetime(2015, 2, 13, 0)
-delta = timedelta(hours = 1)
-
 def process():
+  archiveService = ArchiveService()
+  ghService = GithubService()
+  dbService = DbService()
+  
+  # oldest date 2011-02-12-0
+  archiveDate = datetime(2015, 2, 12, 0)
+  endDate = datetime(2015, 2, 13, 0)
+  delta = timedelta(hours = 1)
+
   while archiveDate < endDate:
     content = archiveService.retrieveData(archiveDate)
-    ghService = GithubService()
     for line in content.splitlines():
       jsonObj = json.loads(line)
       if validIssueEvent(jsonObj):
-        repo = dbService.addRepo(jsonObj['repo'])
-        ghService.retrieveData(jsonObj['payload']['issue']['url'])
+        print(jsonObj)
+        ghService.retrieveData(jsonObj)
 
     archiveDate = archiveDate + delta
 

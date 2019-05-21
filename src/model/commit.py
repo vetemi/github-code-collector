@@ -5,7 +5,7 @@ class Commit:
     url,
     github_id,
     body,
-    language
+    language,
     issue):
     self.url = url
     self.github_id = github_id

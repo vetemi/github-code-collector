@@ -1,13 +1,17 @@
+from service.configService import ConfigService
 import datetime
 import json
 import requests
 import time
 
+import model.commit
+
 class GithubService:
 
   def __init__(self):
+    configService = ConfigService()
     accessTokens = []
-    with open('resources/access-tokens.txt') as f:
+    with open(configService.config['Github']['access-tokens']) as f:
       accessTokens =  f.readlines()
     self.authHeaders = [self.mapAuthHeaders(i) for i in accessTokens]
 
@@ -15,15 +19,18 @@ class GithubService:
     access = access.strip()
     return {"Authorization": "Bearer " + access}
 
-  def retrieveData(self, issueUrl):      
-    issue = self.request(issueUrl)
+  def retrieveData(self, issueEvent):       
+    issue = self.request(jsonObj['payload']['issue']['url'])
     if issue and issue['events_url']:
       events = self.request(issue['events_url'])
 
       commits = []
       for event in events:
         if (self.containsCommit(event) and not self.isDuplicate(event, commits)):
-          commits.append(self.request(event['commit_url']))
+          print(event['commit_url'])
+
+      # if commits.count != 0:
+      #   return createData(jsonObj['repo'], commits )
 
   def request(self, url):
     for auth in self.authHeaders:
