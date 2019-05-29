@@ -1,8 +1,17 @@
+from datetime import datetime, timedelta
 
-import processor
+from codeCollector import CodeCollector
 
 def main():
-  processor.process()
+  # oldest date 2011-02-12-0
+  archiveDate = datetime(2015, 2, 12, 0)
+  endDate = datetime(2015, 2, 13, 1)
+  delta = timedelta(hours = 1)
+  codeCollector = CodeCollector()
+
+  # while archiveDate < endDate:  
+  codeCollector.collectFor(archiveDate)
+  archiveDate = archiveDate + delta
 
 if __name__== "__main__":
   main()

@@ -4,3 +4,6 @@
 /.vscode/
 /resources/access-tokens.txt
 /resources/application.ini
+/**/*.dpkl
+/**/*.hdf5
+/share/
