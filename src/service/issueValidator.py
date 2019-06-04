@@ -17,9 +17,10 @@ class IssueValidator:
       and not isinstance(event['payload']['issue'], int)):
 
       if event['payload']['issue']['labels']:
-        return validLabeledIssue(event['payload']['issue']['labels'])
+        # return validLabeledIssue(event['payload']['issue']['labels'])
+        return False
       else:
-        return validUnlabeldIssue(event['payload']['issue'])
+        return self.validUnlabeldIssue(event['payload']['issue'])
 
     return False
 
@@ -30,14 +31,19 @@ class IssueValidator:
     return False
 
   def validUnlabeldIssue(self, issue):
+    if not issue['body'] or not issue['body']:
+      return False   
+
     vecTitle = self.titlePreproc.transform([issue['title']])
     vecBody = self.bodyPreproc.transform([issue['body']])
-    class_names=['bug', 'feature_request/question']
     probs = self.issueDetector.predict(x=[vecBody, vecTitle]).tolist()[0]
-    print({k:v for k,v in zip(class_names, probs)})
+    if probs[0] >= 0.5 and probs[0] <= 0.7:
+      print(f'probs: {probs[0]} for issue: ' + issue['url'])
+      return True
 
   def initIssueDetector(self):
     self.issueDetector = load_model(self.configService.config['issuedetection']['model'])
+    self.threshold = float(self.configService.config['issuedetection']['threshold'])
 
     with open(self.configService.config['issuedetection']['title-preprocessor'], 'rb') as f:
       self.titlePreproc = dill.load(f)

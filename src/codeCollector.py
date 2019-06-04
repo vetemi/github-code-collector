@@ -19,14 +19,15 @@ class CodeCollector():
     # issue1 = {'title':'errors encountered', 'body':'The function does not work as expected'}
     # issue2 = {'title':'add button', 'body':'It would be cool to have a new button for some function'}
     # issue3 = {'title':'Maybe a bug', 'body':'I am not sure but it seems that I discovered a bug in the processing module. Am I missing something?'}
-    # self.issueValidator.validUnlabeldIssue(issue1)
-    # self.issueValidator.validUnlabeldIssue(issue2)
-    # self.issueValidator.validUnlabeldIssue(issue3)  
+    # print(self.issueValidator.validUnlabeldIssue(issue1))
+    # print(self.issueValidator.validUnlabeldIssue(issue2))
+    # print(self.issueValidator.validUnlabeldIssue(issue3))  
     content = self.archiveService.retrieveData(archiveDate)
     for line in content.splitlines(): 
       event = json.loads(line)
-      if self.issueValidator.validBugIssue(event):
-        self.process(event)
+      self.issueValidator.validBugIssue(event)
+        
+        # self.process(event)
 
   def process(self, issueEvent):
     commits = self.ghService.retrieveCommits(issueEvent['payload']['issue']['events_url'])

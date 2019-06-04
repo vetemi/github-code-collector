@@ -9,9 +9,9 @@ def main():
   delta = timedelta(hours = 1)
   codeCollector = CodeCollector()
 
-  # while archiveDate < endDate:  
-  codeCollector.collectFor(archiveDate)
-  archiveDate = archiveDate + delta
+  while archiveDate < endDate:  
+    codeCollector.collectFor(archiveDate)
+    archiveDate = archiveDate + delta
 
 if __name__== "__main__":
   main()
