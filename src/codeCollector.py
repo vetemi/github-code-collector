@@ -15,19 +15,12 @@ class CodeCollector():
     self.dbService = DbService()
     self.issueValidator = IssueValidator()
 
-  def collectFor(self, archiveDate):
-    # issue1 = {'title':'errors encountered', 'body':'The function does not work as expected'}
-    # issue2 = {'title':'add button', 'body':'It would be cool to have a new button for some function'}
-    # issue3 = {'title':'Maybe a bug', 'body':'I am not sure but it seems that I discovered a bug in the processing module. Am I missing something?'}
-    # print(self.issueValidator.validUnlabeldIssue(issue1))
-    # print(self.issueValidator.validUnlabeldIssue(issue2))
-    # print(self.issueValidator.validUnlabeldIssue(issue3))  
+  def collectFor(self, archiveDate):  
     content = self.archiveService.retrieveData(archiveDate)
     for line in content.splitlines(): 
       event = json.loads(line)
-      self.issueValidator.validBugIssue(event)
-        
-        # self.process(event)
+      if self.issueValidator.validBugIssue(event):
+        self.process(event)
 
   def process(self, issueEvent):
     commits = self.ghService.retrieveCommits(issueEvent['payload']['issue']['events_url'])
@@ -40,34 +33,29 @@ class CodeCollector():
           self.dbService.addFile(self.createFile(codeFile, savedCommit.id))
 
   def createIssue(githubIssue, repoId):
-    bodyTextOnly = replaceCode(githubIssue['body'])
-    ## lang = langdetect.detect(bodyTextOnly) 
+    lang = langdetect.detect(githubIssue['body']) 
     return Issue(githubIssue['url'],
       githubIssue['id'],
       githubIssue['title'],
       githubIssue['body'],
-      bodyTextOnly,
       lang,
       repoId)
 
   def createCommit(githubIssue, issueId):
-    bodyTextOnly = replaceCode(githubIssue['body'])
-    ## lang = langdetect.detect(bodyTextOnly) 
+    lang = langdetect.detect(bodyTextOnly) 
     return Issue(githubIssue['url'],
       githubIssue['id'],
       githubIssue['title'],
       githubIssue['body'],
-      bodyTextOnly,
       lang,
       repoId)
 
 def createFile(githubIssue, issueId):
     bodyTextOnly = replaceCode(githubIssue['body'])
-    ## lang = langdetect.detect(bodyTextOnly) 
+    lang = langdetect.detect(bodyTextOnly) 
     return Issue(githubIssue['url'],
       githubIssue['id'],
       githubIssue['title'],
       githubIssue['body'],
-      bodyTextOnly,
       lang,
       repoId)

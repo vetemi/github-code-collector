@@ -5,15 +5,13 @@ class Issue:
     url,
     github_id,
     title,
-    body_raw,
-    body_text_only,
+    body,
     language,
     repo):
     self.url = url
     self.github_id = github_id
     self.title = title
-    self.body_raw = body_raw
-    self.body_text_only = body_text_only,
+    self.body = body
     self.language = language
     self.repo = repo
     

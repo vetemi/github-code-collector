@@ -21,7 +21,14 @@ class GithubService:
     access = access.strip()
     return {"Authorization": "Bearer " + access}
 
-  def retrieveCommits(self, eventUrl):
+  def retrieveCommits(self, issue):
+    commits = self.retrieveCommitsFromEvents(issue)
+
+    if not commits:
+      commits = self.retrieveCommitsFromPullRequest(issue)        
+    return commits  
+
+  def retrieveCommitsFromEvents(issue):
     events = self.request(issue['events_url'])
     commits = []
     if (events):
@@ -30,8 +37,37 @@ class GithubService:
           commit = self.request(event['commit_url'])
           if commit:
             commits.append(commit)
-            
-    return commits  
+    return commits 
+
+  def containsCommit(self, event):
+    return event['commit_id'] and event['commit_url']
+    
+  def isDuplicate(self, event, commitUrls):
+    for commitUrl in commitUrls:
+      if event['commit_url'] == commitUrl:
+        return True
+
+    return False
+
+  def retrieveCommitsFromPullRequest(issue):
+    
+    query = 'query {'
+      + f'repository(owner: "{repoOwner}", name: "{repoName}") {{'
+        + f'issue(number: {issueNumber}) {{'
+          + 'timelineItems(first: 50) {'
+            + 'nodes {'
+              + '... on CrossReferencedEvent {'
+                + 'source {'
+                  + '... on PullRequest {'
+                    + 'number'
+                  + '}'
+                + '}'
+              + '}'
+            + '}'
+          + '}'
+        + '}'
+      + '}'
+    + '}'
 
   def request(self, url):
     response = requests.get(url, headers=self.authHeaders[self.currentAuthIdx])
@@ -57,13 +93,3 @@ class GithubService:
       resetDate = datetime.datetime.fromtimestamp(response['rate']['reset'])
       now = datetime.datetime.now()
       return int((resetDate - now).total_seconds()) + 5
-
-  def containsCommit(self, event):
-    return event['commit_id'] and event['commit_url']
-    
-  def isDuplicate(self, event, commitUrls):
-    for commitUrl in commitUrls:
-      if event['commit_url'] == commitUrl:
-        return True
-
-    return False

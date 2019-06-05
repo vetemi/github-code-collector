@@ -17,8 +17,7 @@ class IssueValidator:
       and not isinstance(event['payload']['issue'], int)):
 
       if event['payload']['issue']['labels']:
-        # return validLabeledIssue(event['payload']['issue']['labels'])
-        return False
+        return self.validLabeledIssue(event['payload']['issue']['labels'])
       else:
         return self.validUnlabeldIssue(event['payload']['issue'])
 
@@ -31,15 +30,13 @@ class IssueValidator:
     return False
 
   def validUnlabeldIssue(self, issue):
-    if not issue['body'] or not issue['body']:
+    if not issue['body'] or not issue['title']:
       return False   
 
     vecTitle = self.titlePreproc.transform([issue['title']])
     vecBody = self.bodyPreproc.transform([issue['body']])
     probs = self.issueDetector.predict(x=[vecBody, vecTitle]).tolist()[0]
-    if probs[0] >= 0.5 and probs[0] <= 0.7:
-      print(f'probs: {probs[0]} for issue: ' + issue['url'])
-      return True
+    return probs[0] >= self.threshold
 
   def initIssueDetector(self):
     self.issueDetector = load_model(self.configService.config['issuedetection']['model'])
