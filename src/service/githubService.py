@@ -19,7 +19,7 @@ class GithubService:
 
   def mapAuthHeaders(self, access):
     access = access.strip()
-    return {"Authorization": "Bearer " + access}
+    return {'Authorization': 'Bearer ' + access}
 
   def retrieveCommits(self, issue, repo):
     commits = self.retrieveCommitsFromEvents(issue)
@@ -62,7 +62,7 @@ class GithubService:
         for commitSHA in commitSHAs:
           # This is necessary because it's not possible to retrieve commit patches with GraphQL API
           baseUrl = self.configService.config['github']['api-repos-url']
-          commit = self.get(f'{baseUrl}/{repo['name']}/commits/{commitSHA}')
+          commit = self.get(f'{baseUrl}/{repo["name"]}/commits/{commitSHA}')
 
           if commit:
             commit.append(commit)
@@ -70,29 +70,29 @@ class GithubService:
 
   def createQuery(self, issue, repo):
     repoOwnerName = repo['name'].split()
-    return f'query {{ 
-      repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{ 
-        issue(number: {issue['number']}) {{ 
-          timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {{ 
-            nodes {{ 
-              ... on CrossReferencedEvent {{ 
-                source {{ 
-                  ... on PullRequest {{ 
-                    state
-                    commits(first:100) {{
-                      nodes {{
-                        commit {{
-                          oid
-                        }}
-                      }}
-                    }}
-                  }} 
-                }} 
-              }} 
-            }} 
-          }} 
-        }} 
-      }} 
+    return f'query {{ \
+      repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{ \
+        issue(number: {issue["number"]}) {{ \
+          timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {{ \
+            nodes {{ \
+              ... on CrossReferencedEvent {{ \
+                source {{ \
+                  ... on PullRequest {{ \
+                    state \
+                    commits(first:100) {{ \
+                      nodes {{ \
+                        commit {{ \
+                          oid \
+                        }} \
+                      }} \
+                    }} \
+                  }} \
+                }} \
+              }} \
+            }} \
+          }} \
+        }} \
+      }} \
     }}'
 
   def extractCommitSHAs(self, response):
@@ -131,11 +131,9 @@ class GithubService:
     return None
 
   def calculateSleepTime(self):
-    response = requests
-      .get(
+    response = requests.get(
         url=self.configService.config['github']['rate-limit-url'], 
-        headers=self.authHeaders[self.currentAuthIdx])
-      .json()
+        headers=self.authHeaders[self.currentAuthIdx]).json()
     remaining = response['rate']['remaining']
 
     if remaining > 0:

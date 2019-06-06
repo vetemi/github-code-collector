@@ -6,7 +6,7 @@ class File:
     url,
     name,
     extension,
-    content
+    content,
     patch,
     commit):
     self.sha = sha
