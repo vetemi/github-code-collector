@@ -11,8 +11,9 @@ def main():
   codeCollector = CodeCollector()
   mailService = MailService()
   try:
-    print('error')
-    raise Exception('something')
+    while archiveDate < endDate:  
+      codeCollector.collectFor(archiveDate)
+      archiveDate = archiveDate + delta
   except Exception as e:
     mailService.sendMail(e, archiveDate)
     
