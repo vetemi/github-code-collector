@@ -21,70 +21,121 @@ class GithubService:
     access = access.strip()
     return {"Authorization": "Bearer " + access}
 
-  def retrieveCommits(self, issue):
+  def retrieveCommits(self, issue, repo):
     commits = self.retrieveCommitsFromEvents(issue)
-
     if not commits:
-      commits = self.retrieveCommitsFromPullRequest(issue)        
-    return commits  
+      commits = self.retrieveCommitsFromPullRequest(issue, repo)
 
-  def retrieveCommitsFromEvents(issue):
-    events = self.request(issue['events_url'])
+    return commits
+
+  def retrieveCommitsFromEvents(self, issue):
+    events = self.get(issue['events_url'])
     commits = []
-    if (events):
+    if events:
       for event in events:
-        if (self.containsCommit(event) and not self.isDuplicate(event, commitUrls)):
-          commit = self.request(event['commit_url'])
+        if self.containsCommit(event) and not self.isDuplicate(event, commits):
+          commit = self.get(event['commit_url'])
           if commit:
             commits.append(commit)
+
     return commits 
 
   def containsCommit(self, event):
     return event['commit_id'] and event['commit_url']
     
-  def isDuplicate(self, event, commitUrls):
-    for commitUrl in commitUrls:
-      if event['commit_url'] == commitUrl:
+  def isDuplicate(self, event, commits):
+    for commit in commits:
+      if event['commit_id'] == commit['sha']:
         return True
 
     return False
 
-  def retrieveCommitsFromPullRequest(issue):
+  def retrieveCommitsFromPullRequest(self, issue, repo):
+    response = self.post(
+      self.configService.config['github']['graphql-url'],
+      self.createQuery(issue, repo))
     
-    query = 'query {'
-      + f'repository(owner: "{repoOwner}", name: "{repoName}") {{'
-        + f'issue(number: {issueNumber}) {{'
-          + 'timelineItems(first: 50) {'
-            + 'nodes {'
-              + '... on CrossReferencedEvent {'
-                + 'source {'
-                  + '... on PullRequest {'
-                    + 'number'
-                  + '}'
-                + '}'
-              + '}'
-            + '}'
-          + '}'
-        + '}'
-      + '}'
-    + '}'
+    if response and not hasattr(response, 'errors'):
+      commitSHAs = self.extractCommitSHAs(response)
+      commits = []
+      if commitSHAs:
+        for commitSHA in commitSHAs:
+          # This is necessary because it's not possible to retrieve commit patches with GraphQL API
+          baseUrl = self.configService.config['github']['api-repos-url']
+          commit = self.get(f'{baseUrl}/{repo['name']}/commits/{commitSHA}')
 
-  def request(self, url):
-    response = requests.get(url, headers=self.authHeaders[self.currentAuthIdx])
+          if commit:
+            commit.append(commit)
+    return commits
+
+  def createQuery(self, issue, repo):
+    repoOwnerName = repo['name'].split()
+    return f'query {{ 
+      repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{ 
+        issue(number: {issue['number']}) {{ 
+          timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {{ 
+            nodes {{ 
+              ... on CrossReferencedEvent {{ 
+                source {{ 
+                  ... on PullRequest {{ 
+                    state
+                    commits(first:100) {{
+                      nodes {{
+                        commit {{
+                          oid
+                        }}
+                      }}
+                    }}
+                  }} 
+                }} 
+              }} 
+            }} 
+          }} 
+        }} 
+      }} 
+    }}'
+
+  def extractCommitSHAs(self, response):
+    commitSHAs = []
+    pullRequests = response['data']['repository']['issue']['timelineItems']['nodes']
+    if pullRequests:
+      for pullRequest in pullRequests:
+        if (hasattr(node['source'], 'commits') 
+          and hasattr(node['source'], 'state')
+          and pullRequest['source']['state'] == 'MERGED'):
+          if pullRequest['nodes']:
+            for commit in pullRequest['nodes']:
+              commitSHAs.append(commit['commit']['oid'])
+    return commitSHAs
+
+  def get(self, url):
+    response = requests.get(url=url, headers=self.authHeaders[self.currentAuthIdx])
+    return self.respond(response, self.get(url))
+  
+  def post(self, url, body):
+    response = requests.post(
+      url=url, headers=self.authHeaders[self.currentAuthIdx], data=body)
+    return self.respond(response, self.post(url, body))
+    
+  def respond(self, response, httpRequest):
     if response.status_code == 200:
       return response.json()
     if response.status_code == 403:
       if self.currentAuthIdx == self.authHeaders.count - 1:
         # Need to sleep because all access tokens exceeded rate limits
-        time.sleep(self.calculateSleepTime())
         self.currentAuthIdx = 0
+        time.sleep(self.calculateSleepTime())
       else:
         self.currentAuthIdx += 1  
-      return self.request(url)
+      return httpRequest
     return None
 
   def calculateSleepTime(self):
-    response = requests.get(self.configService.config['github']['rate-limit-url']).json()
+    response = requests
+      .get(
+        url=self.configService.config['github']['rate-limit-url'], 
+        headers=self.authHeaders[self.currentAuthIdx])
+      .json()
     remaining = response['rate']['remaining']
 
     if remaining > 0:

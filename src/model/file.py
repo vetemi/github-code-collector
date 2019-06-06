@@ -5,14 +5,14 @@ class File:
     sha,
     url,
     name,
-    ending,
+    extension,
     content
     patch,
     commit):
     self.sha = sha
     self.url = url
     self.name = name
-    self.ending = ending
+    self.extension = extension
     self.content = content
     self.patch = patch
     self.commit = commit

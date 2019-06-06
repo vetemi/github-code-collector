@@ -1,11 +1,15 @@
 import json
+import os
+
+from model.commit import Commit
+from model.issue import Issue
+from model.file import File
 
 from service.archiveService import ArchiveService
 from service.dbService import DbService
 from service.githubService import GithubService
 from service.issueValidator import IssueValidator
 
-from model.issue import Issue
 
 class CodeCollector():
 
@@ -23,39 +27,41 @@ class CodeCollector():
         self.process(event)
 
   def process(self, issueEvent):
-    commits = self.ghService.retrieveCommits(issueEvent['payload']['issue']['events_url'])
+    issue = issueEvent['payload']['issue']
+    repo = issueEvent['repo']
+    commits = self.ghService.retrieveCommits(issue, repo)
     if commmits:
-      repo = self.dbService.addRepo(issueEvent['payload']['repo'])
-      issue = self.dbService.addIssue(self.createIssue(issueEvent['payload']['issue']), repo.id)
+      savedRepo = self.dbService.addRepo(repo)
+      savedIssue = self.dbService.addIssue(self.createIssue(issue), savedRepo)
       for commit in commits:
-        savedCommit = self.dbService.addCommit(self.createCommit(commit, issue.id))
+        savedCommit = self.dbService.addCommit(self.createCommit(commit, savedIssue))
         for codeFile in commit['files']:
-          self.dbService.addFile(self.createFile(codeFile, savedCommit.id))
+          self.dbService.addFile(self.createFile(codeFile, savedCommit))
 
-  def createIssue(githubIssue, repoId):
+  def createIssue(githubIssue, repo):
     lang = langdetect.detect(githubIssue['body']) 
-    return Issue(githubIssue['url'],
-      githubIssue['id'],
-      githubIssue['title'],
-      githubIssue['body'],
-      lang,
-      repoId)
+    return Issue(url = githubIssue['url'],
+      github_id = githubIssue['id'],
+      title = githubIssue['title'],
+      body = githubIssue['body'],
+      language = lang,
+      repo = repo)
 
-  def createCommit(githubIssue, issueId):
-    lang = langdetect.detect(bodyTextOnly) 
-    return Issue(githubIssue['url'],
-      githubIssue['id'],
-      githubIssue['title'],
-      githubIssue['body'],
-      lang,
-      repoId)
+  def createCommit(githubCommit, issue):
+    lang = langdetect.detect(githubCommit['commit']['message']) 
+    return Commit(url = githubCommit['url'],
+      github_id = githubCommit['id'],
+      messae = githubCommit['commit']['message'],
+      language = lang,
+      issue = issue)
 
-def createFile(githubIssue, issueId):
-    bodyTextOnly = replaceCode(githubIssue['body'])
-    lang = langdetect.detect(bodyTextOnly) 
-    return Issue(githubIssue['url'],
-      githubIssue['id'],
-      githubIssue['title'],
-      githubIssue['body'],
-      lang,
-      repoId)
+  def createFile(githubFile, commit):
+    filename, fileExtension = os.path.splitext(githubFile['filename'])
+    content = self.githubService.get(githubFile['raw_url'])
+    return File(url = githubFile['contents_url'],
+      sha = githubFile['sha'],
+      name = filename,
+      extension = fileExtension,
+      content = content,
+      patch = githubFile['patch'],
+      commit = commit)
