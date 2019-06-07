@@ -1,7 +1,7 @@
 import json
 import os
 
-from model.commit import Commit
+from commit import Commit
 from model.issue import Issue
 from model.file import File
 

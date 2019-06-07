@@ -60,7 +60,7 @@ class GithubService:
       commits = []
       if commitSHAs:
         for commitSHA in commitSHAs:
-          # This is necessary because it's not possible to retrieve commit patches with GraphQL API
+          # This is necessary because it's not possible to retrieve the actual patches with GraphQL API
           baseUrl = self.configService.config['github']['api-repos-url']
           commit = self.get(f'{baseUrl}/{repo["name"]}/commits/{commitSHA}')
 
@@ -121,7 +121,7 @@ class GithubService:
     if response.status_code == 200:
       return response.json()
     if response.status_code == 403:
-      if self.currentAuthIdx == self.authHeaders.count - 1:
+      if self.currentAuthIdx == len(self.authHeaders) - 1:
         # Need to sleep because all access tokens exceeded rate limits
         self.currentAuthIdx = 0
         time.sleep(self.calculateSleepTime())

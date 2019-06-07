@@ -2,7 +2,6 @@ dill
 keras
 ktext
 langdetect
-mysql-connector
 psycopg2
 requests
 tensorflow
