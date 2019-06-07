@@ -14,9 +14,11 @@ def main():
     while archiveDate < endDate:  
       codeCollector.collectFor(archiveDate)
       archiveDate = archiveDate + delta
-  except Exception as e:
-    mailService.sendMail(e, archiveDate)
-    
+  except Exception as error:
+    mailService.sendErrorMail(error, archiveDate)
+  
+  mailService.sendSuccessMail(archiveDate, endDate)
+  
 
 if __name__== "__main__":
   main()
