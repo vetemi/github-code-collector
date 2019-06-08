@@ -4,8 +4,7 @@ import requests
 
 class ArchiveService:
 
-  def __init__(self):
-    configService = ConfigService()
+  def __init__(self, ConfigService: ConfigService):
     self.baseUrl = configService.config['github']['archive-url']
 
   def retrieveData(self, date):

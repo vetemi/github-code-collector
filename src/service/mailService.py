@@ -6,8 +6,8 @@ from service.configService import ConfigService
 
 class MailService:
 
-  def __init__(self):
-    self.configService = ConfigService()
+  def __init__(self, configService: ConfigService):
+    self.configService = configService
 
   def sendErrorMail(self, exception, archiveDate):
     self.sendMail(

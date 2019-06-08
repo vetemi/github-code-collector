@@ -9,15 +9,17 @@ from service.archiveService import ArchiveService
 from service.dbService import DbService
 from service.githubService import GithubService
 from service.issueValidator import IssueValidator
+from service.configService import ConfigService
 
 
 class CodeCollector():
 
   def __init__(self):
-    self.archiveService = ArchiveService()
-    self.ghService = GithubService()
-    self.dbService = DbService()
-    self.issueValidator = IssueValidator()
+    configService = ConfigService()
+    self.archiveService = ArchiveService(configService)
+    self.ghService = GithubService(configService)
+    self.dbService = DbService(configService)
+    self.issueValidator = IssueValidator(configService)
 
   def collectFor(self, archiveDate):  
     content = self.archiveService.retrieveData(archiveDate)

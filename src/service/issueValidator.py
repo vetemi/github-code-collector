@@ -5,8 +5,8 @@ import dill
 
 class IssueValidator:
 
-  def __init__(self):
-    self.configService = ConfigService()
+  def __init__(self, configService: ConfigService):
+    self.configService = configService
 
     self.initIssueDetector()
     self.initBugLabels()

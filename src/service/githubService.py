@@ -8,8 +8,8 @@ import model.commit
 
 class GithubService:
 
-  def __init__(self):
-    self.configService = ConfigService()
+  def __init__(self, configService: ConfigService):
+    self.configService = configService
     self.currentAuthIdx = 0
     
     accessTokens = []
@@ -70,30 +70,30 @@ class GithubService:
 
   def createQuery(self, issue, repo):
     repoOwnerName = repo['name'].split()
-    return f'query {{ \
-      repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{ \
-        issue(number: {issue["number"]}) {{ \
-          timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {{ \
-            nodes {{ \
-              ... on CrossReferencedEvent {{ \
-                source {{ \
-                  ... on PullRequest {{ \
-                    state \
-                    commits(first:100) {{ \
-                      nodes {{ \
-                        commit {{ \
-                          oid \
-                        }} \
-                      }} \
-                    }} \
-                  }} \
-                }} \
-              }} \
-            }} \
-          }} \
-        }} \
-      }} \
-    }}'
+    return 'query {' \
+      f'repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{' \
+        f'issue(number: {issue["number"]}) {{' \
+          'timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {' \
+            'nodes {' \
+              '... on CrossReferencedEvent {' \
+                'source {' \
+                  '... on PullRequest {' \
+                    'state' \
+                    'commits(first:100) {' \
+                      'nodes {' \
+                        'commit {' \
+                          'oid' \
+                        '}' \
+                      '}' \
+                    '}' \
+                  '}' \
+                '}' \
+              '}' \
+            '}' \
+          '}' \
+        '}' \
+      '}' \
+    '}'
 
   def extractCommitSHAs(self, response):
     commitSHAs = []
