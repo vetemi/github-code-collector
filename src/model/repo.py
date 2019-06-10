@@ -1,7 +1,7 @@
 class Repo:
 
   def __init__(
-    self,  
+    self,
     url,
     github_id,
     name):

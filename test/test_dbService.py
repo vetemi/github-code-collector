@@ -22,9 +22,24 @@ class DbServiceTest(unittest.TestCase):
     repo = Repo(url='testUrl1', github_id=1, name='testName1')
     expectedId = 1
 
-    resultId = self.dbService.getRepoId(repo)
-    print(resultId)
+    resultId = self.dbService.getRepoId(repo)[0]
     
+    self.assertEqual(expectedId, resultId)
+
+  def test_addRepoIdNew(self):
+    repo = Repo(url='test_addRepoIdNew', github_id=100, name='test_addRepoIdNew')
+    expectedId = 2
+
+    resultId = self.dbService.addRepo(repo)
+
+    self.assertEqual(expectedId, resultId)
+
+  def test_addRepoIdExisting(self):
+    repo = Repo(url='testUrl1', github_id=1, name='testUrl1')
+    expectedId = 1
+
+    resultId = self.dbService.addRepo(repo)
+
     self.assertEqual(expectedId, resultId)
 
   @classmethod

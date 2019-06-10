@@ -24,10 +24,10 @@ class DbService:
       self.cursor.execute(schema.read())
       self.connection.commit()
 
-  def addRepo(self, repo):
+  def addRepo(self, repo: Repo):
     repoId = self.getRepoId(repo)
     if repoId:
-      return repoId
+      return repoId[0]
     else:
       return self.insertRepo(repo)
   
@@ -35,13 +35,12 @@ class DbService:
     selectQuery = 'select id from repositories where github_id = %s and url = %s'  
 
     self.cursor.execute(selectQuery, (repo.github_id, repo.url))
-    return self.cursor.fetchone()[0]
+    return self.cursor.fetchone()
  
   def insertRepo(self, repo: Repo):
     insertQuery = 'insert into repositories(github_id, url, name) values (%s,%s,%s) returning id'
-
     self.cursor.execute(insertQuery, (repo.github_id, repo.url, repo.name))
-    self.cursor.commit()
+    self.connection.commit()
     return self.cursor.fetchone()[0]
 
   def addIssue(self, repo):
