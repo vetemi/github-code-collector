@@ -1,8 +1,8 @@
 import psycopg2
 
-from service.configService import ConfigService
+from src.service.configService import ConfigService
 
-from model.repo import Repo
+from src.model.repo import Repo
 
 class DbService:
 
@@ -15,7 +15,7 @@ class DbService:
       database = configService.config['datasource']['database'])
     self.cursor = self.connection.cursor()
 
-    if configService.config.getboolean('Datasource', 'drop-first'):
+    if configService.config.getboolean('datasource', 'drop-first'):
       with open(configService.config['datasource']['drop-script']) as dropScript:
         self.cursor.execute(dropScript.read())
         self.connection.commit()
@@ -31,13 +31,13 @@ class DbService:
     else:
       return self.insertRepo(repo)
   
-  def getRepoId(repo: Repo):
+  def getRepoId(self, repo: Repo):
     selectQuery = 'select id from repositories where github_id = %s and url = %s'  
-    
+
     self.cursor.execute(selectQuery, (repo.github_id, repo.url))
-    return self.cursor.fetchone()
+    return self.cursor.fetchone()[0]
  
-  def insertRepo(repo: Repo):
+  def insertRepo(self, repo: Repo):
     insertQuery = 'insert into repositories(github_id, url, name) values (%s,%s,%s) returning id'
 
     self.cursor.execute(insertQuery, (repo.github_id, repo.url, repo.name))

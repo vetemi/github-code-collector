@@ -1,12 +1,10 @@
 import unittest
-import src
-import src.service
-
-from src.service.dbService import DbService
 
 from src.model.repo import Repo
 
-from testConfigService import TestConfigService
+from src.service.dbService import DbService
+
+from test.testConfigService import TestConfigService
 
 class DbServiceTest(unittest.TestCase):
 
@@ -16,8 +14,8 @@ class DbServiceTest(unittest.TestCase):
     cls.dbService = DbService(configService)
 
     with open(configService.config['datasource']['test-data']) as testData:
-      self.dbCursor.execute(testData.read())
-      self.connection.commit()
+      cls.dbService.cursor.execute(testData.read())
+      cls.dbService.connection.commit()
 
 
   def test_readRepoId(self):
@@ -25,6 +23,7 @@ class DbServiceTest(unittest.TestCase):
     expectedId = 1
 
     resultId = self.dbService.getRepoId(repo)
+    print(resultId)
     
     self.assertEqual(expectedId, resultId)
 

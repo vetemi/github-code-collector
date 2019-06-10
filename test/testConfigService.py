@@ -8,7 +8,7 @@ class TestConfigService:
   
   def __init__(self):
     self.config = configparser.ConfigParser()
-    if os.path.exists(ConfigService.appTestIni):
-      self.config.read(ConfigService.appTestIni)
+    if os.path.exists(TestConfigService.appTestIni):
+      self.config.read(TestConfigService.appTestIni)
     else:
       raise Exception('No test configuration provided')

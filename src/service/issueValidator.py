@@ -1,4 +1,4 @@
-from service.configService import ConfigService
+from src.service.configService import ConfigService
 
 from tensorflow.keras.models import load_model
 import dill

@@ -1,4 +1,4 @@
-DROP TABLE repositories;
-DROP TABLE issues;
-DROP TABLE commits;
 DROP TABLE files;
+DROP TABLE commits;
+DROP TABLE issues;
+DROP TABLE repositories;

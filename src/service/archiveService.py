@@ -1,10 +1,10 @@
-from service.configService import ConfigService
+from src.service.configService import ConfigService
 import gzip
 import requests
 
 class ArchiveService:
 
-  def __init__(self, ConfigService: ConfigService):
+  def __init__(self, configService: ConfigService):
     self.baseUrl = configService.config['github']['archive-url']
 
   def retrieveData(self, date):

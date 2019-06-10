@@ -2,7 +2,7 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 
-from service.configService import ConfigService
+from src.service.configService import ConfigService
 
 class MailService:
 

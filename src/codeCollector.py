@@ -1,21 +1,20 @@
 import json
 import os
 
-from commit import Commit
-from model.issue import Issue
-from model.file import File
+from src.model.commit import Commit
+from src.model.issue import Issue
+from src.model.file import File
 
-from service.archiveService import ArchiveService
-from service.dbService import DbService
-from service.githubService import GithubService
-from service.issueValidator import IssueValidator
-from service.configService import ConfigService
+from src.service.archiveService import ArchiveService
+from src.service.dbService import DbService
+from src.service.githubService import GithubService
+from src.service.issueValidator import IssueValidator
+from src.service.configService import ConfigService
 
 
 class CodeCollector():
 
-  def __init__(self):
-    configService = ConfigService()
+  def __init__(self, configService: ConfigService):
     self.archiveService = ArchiveService(configService)
     self.ghService = GithubService(configService)
     self.dbService = DbService(configService)

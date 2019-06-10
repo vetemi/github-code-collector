@@ -1,10 +1,8 @@
-from service.configService import ConfigService
+from src.service.configService import ConfigService
 import datetime
 import json
 import requests
 import time
-
-import model.commit
 
 class GithubService:
 
