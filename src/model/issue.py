@@ -5,13 +5,13 @@ class Issue:
     url,
     github_id,
     title,
-    message,
+    body,
     language,
-    repo):
+    repoId):
     self.url = url
     self.github_id = github_id
     self.title = title
-    self.message = message
+    self.body = body
     self.language = language
-    self.repo = repo
-    
+    self.repoId = repoId
+    self.table = 'issues'

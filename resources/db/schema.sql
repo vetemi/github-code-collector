@@ -17,8 +17,7 @@ CREATE TABLE IF NOT EXISTS issues (
   github_id INT UNIQUE NOT NULL, 
   url VARCHAR(255) UNIQUE NOT NULL,
   title VARCHAR(255) NOT NULL,
-  body_raw TEXT,
-  body_text_only TEXT,
+  body TEXT,
   language VARCHAR(10),
   repository_id INT NOT NULL,
 
@@ -35,7 +34,7 @@ CREATE TABLE IF NOT EXISTS commits (
 
   github_id INT UNIQUE NOT NULL, 
   url VARCHAR(255) UNIQUE NOT NULL,
-  body VARCHAR(255),
+  message VARCHAR(255),
   language VARCHAR(10),
   issue_id INT NOT NULL,
 
@@ -51,11 +50,11 @@ CREATE TABLE IF NOT EXISTS files (
   id SERIAL NOT NULL PRIMARY KEY,
 
   sha VARCHAR(255) NOT NULL, 
-  url VARCHAR(255) UNIQUE NOT NULL,
+  url VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
-  ending VARCHAR(10) NOT NULL,
+  extension VARCHAR(10) NOT NULL,
   content TEXT NOT NULL,
-  patch TEXT NOT NULL,
+  patch TEXT UNIQUE NOT NULL,
   commit_id INT NOT NULL,
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),

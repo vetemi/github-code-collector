@@ -8,3 +8,4 @@ class Repo:
     self.url = url
     self.github_id = github_id 
     self.name = name
+    self.table = 'repositories'

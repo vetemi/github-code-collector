@@ -8,12 +8,13 @@ class File:
     extension,
     content,
     patch,
-    commit):
+    commitId):
     self.sha = sha
     self.url = url
     self.name = name
     self.extension = extension
     self.content = content
     self.patch = patch
-    self.commit = commit
+    self.commitId = commitId
+    self.table = 'files'
 

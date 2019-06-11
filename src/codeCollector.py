@@ -1,6 +1,8 @@
 import json
 import os
 
+from src.error.duplicate import DuplicateError
+
 from src.model.commit import Commit
 from src.model.issue import Issue
 from src.model.file import File
@@ -10,7 +12,6 @@ from src.service.dbService import DbService
 from src.service.githubService import GithubService
 from src.service.issueValidator import IssueValidator
 from src.service.configService import ConfigService
-
 
 class CodeCollector():
 
@@ -22,7 +23,9 @@ class CodeCollector():
 
   def collectFor(self, archiveDate):  
     content = self.archiveService.retrieveData(archiveDate)
-    for line in content.splitlines(): 
+    for line in content.splitlines(): import psycopg2
+from psycopg2.extensions import AsIs
+from psycopg2.errors import UniqueViolation
       event = json.loads(line)
       if self.issueValidator.validBugIssue(event):
         self.process(event)
@@ -32,31 +35,35 @@ class CodeCollector():
     repo = issueEvent['repo']
     commits = self.ghService.retrieveCommits(issue, repo)
     if commmits:
-      savedRepo = self.dbService.addRepo(repo)
-      savedIssue = self.dbService.addIssue(self.createIssue(issue), savedRepo)
+      repoId = self.dbService.addRepo(repo)
+      issueId = self.dbService.addIssue(self.createIssue(issue), repoId)
       for commit in commits:
-        savedCommit = self.dbService.addCommit(self.createCommit(commit, savedIssue))
+        commitId = self.dbService.addCommit(self.createCommit(commit, issueId))
         for codeFile in commit['files']:
-          self.dbService.addFile(self.createFile(codeFile, savedCommit))
+          file = self.createFile(codeFile, commitId)
+          try:
+            if self.dbService.addFile(file)
+          except DuplicateError:
+            print('TODO: Write mail')
 
-  def createIssue(githubIssue, repo):
+  def createIssue(githubIssue, repoId):
     lang = langdetect.detect(githubIssue['body']) 
     return Issue(url = githubIssue['url'],
       github_id = githubIssue['id'],
       title = githubIssue['title'],
       body = githubIssue['body'],
       language = lang,
-      repo = repo)
+      repoId = repoId)
 
-  def createCommit(githubCommit, issue):
+  def createCommit(githubCommit, issueId):
     lang = langdetect.detect(githubCommit['commit']['message']) 
     return Commit(url = githubCommit['url'],
       github_id = githubCommit['id'],
-      messae = githubCommit['commit']['message'],
+      message = githubCommit['commit']['message'],
       language = lang,
-      issue = issue)
+      issueId = issueId)
 
-  def createFile(githubFile, commit):
+  def createFile(githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
     content = self.githubService.get(githubFile['raw_url'])
     return File(url = githubFile['contents_url'],
@@ -65,4 +72,4 @@ class CodeCollector():
       extension = fileExtension,
       content = content,
       patch = githubFile['patch'],
-      commit = commit)
+      commitId = commitId)

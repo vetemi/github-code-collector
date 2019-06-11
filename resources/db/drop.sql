@@ -1,4 +1,4 @@
-DROP TABLE files;
-DROP TABLE commits;
-DROP TABLE issues;
-DROP TABLE repositories;
+DROP TABLE IF EXISTS files;
+DROP TABLE IF EXISTS commits;
+DROP TABLE IF EXISTS issues;
+DROP TABLE IF EXISTS repositories;

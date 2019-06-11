@@ -4,11 +4,12 @@ class Commit:
     self,
     url,
     github_id,
-    body,
+    message,
     language,
-    issue):
+    issueId):
     self.url = url
     self.github_id = github_id
-    self.body = body
+    self.message = message
     self.language = language
-    self.issue = issue
+    self.issueId = issueId
+    self.table = 'commits'
