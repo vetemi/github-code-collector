@@ -18,6 +18,7 @@ def main():
       archiveDate = archiveDate + delta
   except Exception as error:
     mailService.sendErrorMail(error, archiveDate)
+    raise error
   
   mailService.sendSuccessMail(archiveDate, endDate)
   

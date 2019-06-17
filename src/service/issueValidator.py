@@ -19,20 +19,20 @@ class IssueValidator:
       if event['payload']['issue']['labels']:
         return self.validLabeledIssue(event['payload']['issue']['labels'])
       else:
-        return self.validUnlabeldIssue(event['payload']['issue'])
+        return self.validUnlabeledIssue(event['payload']['issue'])
 
     return False
 
   def validLabeledIssue(self, labels):
-    for label in event['payload']['issue']['labels']:
+    for label in labels:
       if label['name'].lower() in self.validBugLabels:
         return True
     return False
 
-  def validUnlabeldIssue(self, issue):
+  def validUnlabeledIssue(self, issue):
     if not issue['body'] or not issue['title']:
       return False   
-
+    
     vecTitle = self.titlePreproc.transform([issue['title']])
     vecBody = self.bodyPreproc.transform([issue['body']])
     probs = self.issueDetector.predict(x=[vecBody, vecTitle]).tolist()[0]

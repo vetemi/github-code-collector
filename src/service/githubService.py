@@ -53,9 +53,9 @@ class GithubService:
       self.configService.config['github']['graphql-url'],
       self.createQuery(issue, repo))
     
+    commits = []
     if response and not hasattr(response, 'errors'):
       commitSHAs = self.extractCommitSHAs(response)
-      commits = []
       if commitSHAs:
         for commitSHA in commitSHAs:
           # This is necessary because it's not possible to retrieve the actual patches with GraphQL API
@@ -63,12 +63,12 @@ class GithubService:
           commit = self.get(f'{baseUrl}/{repo["name"]}/commits/{commitSHA}')
 
           if commit:
-            commit.append(commit)
+            commits.append(commit)
     return commits
 
   def createQuery(self, issue, repo):
-    repoOwnerName = repo['name'].split()
-    return 'query {' \
+    repoOwnerName = repo['name'].split('/')
+    query = 'query {' \
       f'repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{' \
         f'issue(number: {issue["number"]}) {{' \
           'timelineItems(first: 100, itemTypes: CROSS_REFERENCED_EVENT) {' \
@@ -76,7 +76,7 @@ class GithubService:
               '... on CrossReferencedEvent {' \
                 'source {' \
                   '... on PullRequest {' \
-                    'state' \
+                    'state ' \
                     'commits(first:100) {' \
                       'nodes {' \
                         'commit {' \
@@ -92,28 +92,29 @@ class GithubService:
         '}' \
       '}' \
     '}'
+    return json.dumps({'query': query}) 
 
   def extractCommitSHAs(self, response):
     commitSHAs = []
     pullRequests = response['data']['repository']['issue']['timelineItems']['nodes']
     if pullRequests:
       for pullRequest in pullRequests:
-        if (hasattr(node['source'], 'commits') 
-          and hasattr(node['source'], 'state')
+        if ('commits' in pullRequest['source'] 
+          and 'state' in pullRequest['source']
           and pullRequest['source']['state'] == 'MERGED'):
-          if pullRequest['nodes']:
-            for commit in pullRequest['nodes']:
+          if pullRequest['source']['commits']['nodes']:
+            for commit in pullRequest['source']['commits']['nodes']:
               commitSHAs.append(commit['commit']['oid'])
     return commitSHAs
 
   def get(self, url):
     response = requests.get(url=url, headers=self.authHeaders[self.currentAuthIdx])
-    return self.respond(response, self.get(url))
+    return self.respond(response, lambda: self.get(url))
   
   def post(self, url, body):
     response = requests.post(
       url=url, headers=self.authHeaders[self.currentAuthIdx], data=body)
-    return self.respond(response, self.post(url, body))
+    return self.respond(response, lambda: self.post(url, body))
     
   def respond(self, response, httpRequest):
     if response.status_code == 200:

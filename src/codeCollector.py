@@ -1,6 +1,8 @@
 import json
 import os
 
+import langdetect
+
 from src.error.duplicate import DuplicateError
 
 from src.model.commit import Commit
@@ -23,9 +25,7 @@ class CodeCollector():
 
   def collectFor(self, archiveDate):  
     content = self.archiveService.retrieveData(archiveDate)
-    for line in content.splitlines(): import psycopg2
-from psycopg2.extensions import AsIs
-from psycopg2.errors import UniqueViolation
+    for line in content.splitlines():
       event = json.loads(line)
       if self.issueValidator.validBugIssue(event):
         self.process(event)
@@ -34,19 +34,16 @@ from psycopg2.errors import UniqueViolation
     issue = issueEvent['payload']['issue']
     repo = issueEvent['repo']
     commits = self.ghService.retrieveCommits(issue, repo)
-    if commmits:
+    if commits:
       repoId = self.dbService.addRepo(repo)
       issueId = self.dbService.addIssue(self.createIssue(issue), repoId)
       for commit in commits:
         commitId = self.dbService.addCommit(self.createCommit(commit, issueId))
         for codeFile in commit['files']:
           file = self.createFile(codeFile, commitId)
-          try:
-            if self.dbService.addFile(file)
-          except DuplicateError:
-            print('TODO: Write mail')
+          self.dbService.addFile(file)
 
-  def createIssue(githubIssue, repoId):
+  def createIssue(self, githubIssue, repoId):
     lang = langdetect.detect(githubIssue['body']) 
     return Issue(url = githubIssue['url'],
       github_id = githubIssue['id'],
@@ -55,7 +52,7 @@ from psycopg2.errors import UniqueViolation
       language = lang,
       repoId = repoId)
 
-  def createCommit(githubCommit, issueId):
+  def createCommit(self, githubCommit, issueId):
     lang = langdetect.detect(githubCommit['commit']['message']) 
     return Commit(url = githubCommit['url'],
       github_id = githubCommit['id'],
@@ -63,7 +60,7 @@ from psycopg2.errors import UniqueViolation
       language = lang,
       issueId = issueId)
 
-  def createFile(githubFile, commitId):
+  def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
     content = self.githubService.get(githubFile['raw_url'])
     return File(url = githubFile['contents_url'],
