@@ -2,11 +2,10 @@ import unittest
 
 from psycopg2.extensions import AsIs
 
-from src.error.duplicate import DuplicateError
-
 from src.model.commit import Commit
 from src.model.file import File
 from src.model.issue import Issue
+from src.model.patch import Patch
 from src.model.repo import Repo
 
 from src.service.dbService import DbService
@@ -63,7 +62,7 @@ class DbServiceTest(unittest.TestCase):
       github_id = 1, 
       title = 'testTitle1', 
       body = 'testBody1',
-      language = 'de',
+      language = None,
       repoId = 1)
     expectedId = 1
 
@@ -101,7 +100,7 @@ class DbServiceTest(unittest.TestCase):
   def test_readCommitId(self):
     commit = Commit(
       url = 'testUrl1', 
-      github_id = 1, 
+      github_id = 'testSha1', 
       message = 'testMessage1',
       language = 'de',
       issueId = 1)
@@ -114,7 +113,7 @@ class DbServiceTest(unittest.TestCase):
   def test_addCommitNew(self):
     commit = Commit(
       url = 'test_addCommitNew', 
-      github_id = 100, 
+      github_id = 'test_addCommitNew', 
       message = 'test_addCommitNew', 
       language = 'de',
       issueId = 1)
@@ -126,24 +125,23 @@ class DbServiceTest(unittest.TestCase):
   def test_addCommitExisting(self):
     commit = Commit(
       url = 'testUrl1', 
-      github_id = 1, 
+      github_id = 'testSha1', 
       message = 'testMessage1',
       language = 'de',
       issueId = 1)
-    expectedId = 1
 
     resultId = self.dbService.addCommit(commit)
 
-    self.assertEqual(expectedId, resultId)
+    self.assertIsNone(resultId)
 
   def test_addFileNew(self):
     file = File(
-      sha = 'test_addFileNew',
+      github_id = 'test_addFileNew',
       url = 'test_addFileNew',
       name = 'test_addFileNew',
-      extension = 'ext',
+      extension = 'testExt',
       content = 'test_addFileNew',
-      patch = 'test_addFileNew',
+      hash = 100,
       commitId = 1
     )
 
@@ -151,18 +149,47 @@ class DbServiceTest(unittest.TestCase):
 
     self.assertInserted(file, resultId)
 
-  def test_addFileExisting(self):
+  def test_addFileExistingUrlAndGHId(self):
     file = File(
-      sha = 'test_addFileExisting',
-      url = 'test_addFileExisting',
-      name = 'test_addFileExisting',
+      github_id = 'testSha1',
+      url = 'testUrl1',
+      name = 'test_addFileExistingUrlAndGHId',
       extension = 'ext',
-      content = 'test_addFileExisting',
-      patch = 'testUrl1',
+      content = 'test_addFileExistingUrlAndGHId',
+      hash = 100,
       commitId = 1
     )
-    with self.assertRaises(DuplicateError):
-      self.dbService.addFile(file)
+    expectedId = 1
+
+    resultId = self.dbService.addFile(file)
+
+    self.assertEqual(resultId, expectedId)
+
+  def test_addFileExistingHashAndExt(self):
+    file = File(
+      github_id = 'test_addFileExistingHash',
+      url = 'test_addFileExistingHash',
+      name = 'test_addFileExistingHash',
+      extension = 'testExt1',
+      content = 'testContent1',
+      hash = 1,
+      commitId = 1
+    )
+    expectedId = 1
+
+    resultId = self.dbService.addFile(file)
+
+    self.assertEqual(resultId, expectedId)
+
+  def test_addPatchNew(self):
+    patch = Patch(
+      content = 'test_addPatchNew',
+      fileId = 1
+    )
+
+    resultId = self.dbService.addPatch(patch)
+
+    self.assertInserted(patch, resultId)
 
   def assertInserted(self, entity, resultId):
     selectQuery = 'select id from %s where id = %s'  

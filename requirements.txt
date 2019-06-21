@@ -2,6 +2,7 @@ dill
 keras
 ktext
 langdetect
+mmh3
 psycopg2
 requests
 tensorflow

@@ -1,6 +1,7 @@
+from email.message import EmailMessage
 import smtplib
 import ssl
-from email.message import EmailMessage
+import traceback
 
 from src.service.configService import ConfigService
 
@@ -9,17 +10,20 @@ class MailService:
   def __init__(self, configService: ConfigService):
     self.configService = configService
 
-  def sendErrorMail(self, exception, archiveDate):
+  def sendErrorMail(self, exception, archiveDate, failedEvent):
     self.sendMail(
-      self.createErrorMessage(exception, archiveDate)
+      self.createErrorMessage(exception, archiveDate, failedEvent)
     )
 
-  def createErrorMessage(self, exception, archiveDate):
+  def createErrorMessage(self, exception, archiveDate, failedEvent):
     msg = EmailMessage()
     msg['Subject'] = 'Github Code Collector - Error'
     msg['From'] = self.configService.config['mail']['from']
     msg['To'] = self.configService.config['mail']['to']
-    msg.set_content(f'Archive Date: {str(archiveDate)} \n\nError: \n{str(exception)}')
+    msg.set_content(
+      f'Archive Date: {str(archiveDate)}' \
+      f'\n\nFailed Event: {str(failedEvent)}' \
+      f'\n\nError: \n{traceback.format_exc()}')
     return msg
 
   def sendSuccessMail(self, fromDate, untilDate):

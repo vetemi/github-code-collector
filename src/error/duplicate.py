@@ -1,2 +1,0 @@
-class DuplicateError(Exception):
-  pass

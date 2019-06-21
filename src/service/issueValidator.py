@@ -1,14 +1,12 @@
 from src.service.configService import ConfigService
-
-from tensorflow.keras.models import load_model
-import dill
+from src.service.bugDetector import BugDetector
 
 class IssueValidator:
 
   def __init__(self, configService: ConfigService):
     self.configService = configService
 
-    self.initIssueDetector()
+    self.bugDetector = BugDetector(configService)
     self.initBugLabels()
 
   def validBugIssue(self, event):
@@ -30,23 +28,7 @@ class IssueValidator:
     return False
 
   def validUnlabeledIssue(self, issue):
-    if not issue['body'] or not issue['title']:
-      return False   
-    
-    vecTitle = self.titlePreproc.transform([issue['title']])
-    vecBody = self.bodyPreproc.transform([issue['body']])
-    probs = self.issueDetector.predict(x=[vecBody, vecTitle]).tolist()[0]
-    return probs[0] >= self.threshold
-
-  def initIssueDetector(self):
-    self.issueDetector = load_model(self.configService.config['issuedetection']['model'])
-    self.threshold = float(self.configService.config['issuedetection']['threshold'])
-
-    with open(self.configService.config['issuedetection']['title-preprocessor'], 'rb') as f:
-      self.titlePreproc = dill.load(f)
-
-    with open(self.configService.config['issuedetection']['body-preprocessor'], 'rb') as f:
-      self.bodyPreproc = dill.load(f)
+    return self.bugDetector.isBug(issue)
 
   def initBugLabels(self):
     self.validBugLabels = []

@@ -1,8 +1,9 @@
-from src.service.configService import ConfigService
 import datetime
 import json
 import requests
 import time
+
+from src.service.configService import ConfigService
 
 class GithubService:
 
@@ -31,7 +32,7 @@ class GithubService:
     commits = []
     if events:
       for event in events:
-        if self.containsCommit(event) and not self.isDuplicate(event, commits):
+        if (self.containsCommit(event) and not self.isDuplicate(event, commits)):
           commit = self.get(event['commit_url'])
           if commit:
             commits.append(commit)
@@ -54,7 +55,7 @@ class GithubService:
       self.createQuery(issue, repo))
     
     commits = []
-    if response and not hasattr(response, 'errors'):
+    if response and 'errors' not in response:
       commitSHAs = self.extractCommitSHAs(response)
       if commitSHAs:
         for commitSHA in commitSHAs:
@@ -118,7 +119,10 @@ class GithubService:
     
   def respond(self, response, httpRequest):
     if response.status_code == 200:
-      return response.json()
+      try:
+        return response.json()
+      except ValueError as e:
+        return response.content
     if response.status_code == 403:
       if self.currentAuthIdx == len(self.authHeaders) - 1:
         # Need to sleep because all access tokens exceeded rate limits
@@ -126,7 +130,7 @@ class GithubService:
         time.sleep(self.calculateSleepTime())
       else:
         self.currentAuthIdx += 1  
-      return httpRequest
+      return httpRequest()
     return None
 
   def calculateSleepTime(self):

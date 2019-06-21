@@ -30,15 +30,15 @@ class GithubServiceTest(unittest.TestCase):
     self.assertEqual(len(commits), 0)
 
   def test_retrieveCommitsFromPullRequest(self):
-      repo = {
-        'name' : 'codeschluss/wupportal'
-      }
+    repo = {
+      'name' : 'codeschluss/wupportal'
+    }
 
-      issue = {
-        'number' : 91
-      }
+    issue = {
+      'number' : 91
+    }
 
-      commits = self.githubService.retrieveCommitsFromPullRequest(issue, repo)
-
-      self.assertEqual(len(commits), 9)
+    commits = self.githubService.retrieveCommitsFromPullRequest(issue, repo)
+    
+    self.assertEqual(len(commits), 9)
     

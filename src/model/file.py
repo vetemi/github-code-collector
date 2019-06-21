@@ -2,19 +2,19 @@ class File:
 
   def __init__(
     self,
-    sha,
+    github_id,
     url,
     name,
     extension,
     content,
-    patch,
+    hash,
     commitId):
-    self.sha = sha
+    self.github_id = github_id
     self.url = url
     self.name = name
     self.extension = extension
     self.content = content
-    self.patch = patch
+    self.hash = hash
     self.commitId = commitId
     self.table = 'files'
 
