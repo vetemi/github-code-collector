@@ -2,7 +2,6 @@ import concurrent.futures
 import json
 import os
 import requests
-import threading
 
 import mmh3
 import langdetect
@@ -21,37 +20,38 @@ from src.service.configService import ConfigService
 
 class CodeCollector():
 
-  def __init__(self, configService: ConfigService):
+  def __init__(self, configService: ConfigService, accessToken):
     self.archiveService = ArchiveService(configService)
-    self.ghService = GithubService(configService)
+    self.ghService = GithubService(configService, accessToken)
     self.dbService = DbService(configService)
     self.issueValidator = IssueValidator(configService)
 
   def collectFor(self, archiveDate):  
-    lines = self.archiveService.retrieveData(archiveDate).splitlines()
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-      future_to_event = {executor.submit(self.process, line): line for line in lines}
-      for future in concurrent.futures.as_completed(future_to_event):
-        event = future_to_event[future]
-        try:
-            future.result()
-        except Exception as error:
-          self.failedEvent = event
-          raise error
-    
-  def process(self, line):
-    event = json.loads(line)
-    if self.issueValidator.validBugIssue(event): 
-      issue = event['payload']['issue']
-      repo = event['repo']
-      commits = self.ghService.retrieveCommits(issue, repo)
-      if commits:
-        repoId = self.dbService.addRepo(self.createRepo(repo))
-        issueId = self.dbService.addIssue(self.createIssue(issue, repoId))
-        for commit in commits:
-          commitId = self.dbService.addCommit(self.createCommit(commit, issueId))
-          if commitId:
-            self.processFilepatches(commit, commitId)
+    event = None
+    try:
+      content = self.archiveService.retrieveData(archiveDate)
+      lines = content.splitlines()
+      for line in lines:
+        event = json.loads(line)
+        if self.issueValidator.validBugIssue(event):
+          self.process(event)
+    except Exception as error:
+      self.failedEvent = event
+      self.dbService.addArchiveDate(archiveDate, False)
+      raise error
+    self.dbService.addArchiveDate(archiveDate, True)
+
+  def process(self, issueEvent):
+    issue = issueEvent['payload']['issue']
+    repo = issueEvent['repo']
+    commits = self.ghService.retrieveCommits(issue, repo)
+    if commits:
+      repoId = self.dbService.addRepo(self.createRepo(repo))
+      issueId = self.dbService.addIssue(self.createIssue(issue, repoId))
+      for commit in commits:
+        commitId = self.dbService.addCommit(self.createCommit(commit, issueId))
+        if commitId:
+          self.processFilepatches(commit, commitId)
 
   def processFilepatches(self, commit, commitId):
     for codeFile in commit['files']:
@@ -91,7 +91,7 @@ class CodeCollector():
 
   def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
-    content = requests.get(githubFile['raw_url']).content
+    content = requests.get(githubFile['raw_url']).content.decode('utf-8', 'ignore')
     hash = mmh3.hash128(content, signed = True)
     return File(url = githubFile['raw_url'],
       github_id = githubFile['sha'],

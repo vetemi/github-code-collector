@@ -7,18 +7,9 @@ from src.service.configService import ConfigService
 
 class GithubService:
 
-  def __init__(self, configService: ConfigService):
+  def __init__(self, configService: ConfigService, accessToken):
     self.configService = configService
-    self.currentAuthIdx = 0
-    
-    accessTokens = []
-    with open(self.configService.config['github']['access-tokens']) as f:
-      accessTokens =  f.readlines()
-    self.authHeaders = [self.mapAuthHeaders(i) for i in accessTokens]
-
-  def mapAuthHeaders(self, access):
-    access = access.strip()
-    return {'Authorization': 'Bearer ' + access}
+    self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
 
   def retrieveCommits(self, issue, repo):
     commits = self.retrieveCommitsFromEvents(issue)
@@ -28,15 +19,15 @@ class GithubService:
     return commits
 
   def retrieveCommitsFromEvents(self, issue):
-    events = self.get(issue['events_url'])
     commits = []
-    if events:
-      for event in events:
-        if (self.containsCommit(event) and not self.isDuplicate(event, commits)):
-          commit = self.get(event['commit_url'])
-          if commit:
-            commits.append(commit)
-
+    if 'events_url' in issue: 
+      events = self.get(issue['events_url'])
+      if events:
+        for event in events:
+          if (self.containsCommit(event) and not self.isDuplicate(event, commits)):
+            commit = self.get(event['commit_url'])
+            if commit:
+              commits.append(commit)
     return commits 
 
   def containsCommit(self, event):
@@ -109,12 +100,12 @@ class GithubService:
     return commitSHAs
 
   def get(self, url):
-    response = requests.get(url=url, headers=self.authHeaders[self.currentAuthIdx])
+    response = requests.get(url=url, headers=self.authHeader)
     return self.respond(response, lambda: self.get(url))
   
   def post(self, url, body):
     response = requests.post(
-      url=url, headers=self.authHeaders[self.currentAuthIdx], data=body)
+      url=url, headers=self.authHeader, data=body)
     return self.respond(response, lambda: self.post(url, body))
     
   def respond(self, response, httpRequest):
@@ -124,19 +115,15 @@ class GithubService:
       except ValueError as e:
         return response.content
     if response.status_code == 403:
-      if self.currentAuthIdx == len(self.authHeaders) - 1:
-        # Need to sleep because all access tokens exceeded rate limits
-        self.currentAuthIdx = 0
-        time.sleep(self.calculateSleepTime())
-      else:
-        self.currentAuthIdx += 1  
+      # Need to sleep because access token exceeded rate limit
+      time.sleep(self.calculateSleepTime())
       return httpRequest()
     return None
 
   def calculateSleepTime(self):
     response = requests.get(
         url=self.configService.config['github']['rate-limit-url'], 
-        headers=self.authHeaders[self.currentAuthIdx]).json()
+        headers=self.authHeader).json()
     remaining = response['rate']['remaining']
 
     if remaining > 0:

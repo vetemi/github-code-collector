@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 from psycopg2.extensions import AsIs
 
@@ -9,6 +10,7 @@ from src.model.patch import Patch
 from src.model.repo import Repo
 
 from src.service.dbService import DbService
+from src.codeCollector import CodeCollector
 
 from test.testConfigService import TestConfigService
 
@@ -16,10 +18,11 @@ class DbServiceTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
-    configService = TestConfigService()
-    cls.dbService = DbService(configService)
+    cls.configService = TestConfigService()
+    cls.dbService = DbService(cls.configService)
+    DbService.initDb(cls.configService, cls.dbService.cursor, cls.dbService.connection)
 
-    with open(configService.config['datasource']['test-data']) as testData:
+    with open(cls.configService.config['datasource']['test-data']) as testData:
       cls.dbService.cursor.execute(testData.read())
       cls.dbService.connection.commit()
 
@@ -149,6 +152,7 @@ class DbServiceTest(unittest.TestCase):
 
     self.assertInserted(file, resultId)
 
+
   def test_addFileExistingUrlAndGHId(self):
     file = File(
       github_id = 'testSha1',
@@ -190,6 +194,26 @@ class DbServiceTest(unittest.TestCase):
     resultId = self.dbService.addPatch(patch)
 
     self.assertInserted(patch, resultId)
+
+  def assertInserted(self, entity, resultId):
+    selectQuery = 'select id from %s where id = %s'  
+
+    self.dbService.cursor.execute(selectQuery, (AsIs(entity.table), resultId))
+    result = self.dbService.cursor.fetchone()
+
+    self.assertIsNotNone(result)
+
+  def test_addArchiveNew(self):
+    archiveDate = datetime(2099, 2, 12, 0)
+    succeeded = True
+
+    self.dbService.addArchiveDate(archiveDate, succeeded)
+  
+    string = archiveDate.strftime("%Y-%m-%d-%-H")
+    self.dbService.cursor.execute(
+      f"select id from archive_dates where date = '{string}'"
+    )
+    self.assertIsNotNone(self.dbService.cursor.fetchone())
 
   def assertInserted(self, entity, resultId):
     selectQuery = 'select id from %s where id = %s'  

@@ -11,7 +11,10 @@ class CodeCollectorTest(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     configService = TestConfigService()
-    cls.codeCollector = CodeCollector(configService)
+    with open(configService.config['github']['access-tokens']) as f:
+      accessTokens =  f.readlines()
+
+    cls.codeCollector = CodeCollector(configService, accessTokens[0])
 
   def test_createRepo(self):
       github_id = 1
@@ -86,7 +89,7 @@ class CodeCollectorTest(unittest.TestCase):
       'patch' : patch
     }
     commitId = 2
-    content = requests.get(url=raw_url).content
+    content = requests.get(url=raw_url).content.decode('utf-8')
     hash = mmh3.hash128(content, signed = True)
     
     created = self.codeCollector.createFile(file, commitId)

@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2.extensions import AsIs
+from psycopg2.extensions import AsIs, quote_ident
 from psycopg2.errors import UniqueViolation
 
 from src.model.commit import Commit
@@ -12,23 +12,28 @@ from src.service.configService import ConfigService
 
 class DbService:
 
-  def __init__(self, configService):
-    self.connection = psycopg2.connect(
+  def getConnection(configService):
+    connection = psycopg2.connect(
       user = configService.config['datasource']['user'],
       password = configService.config['datasource']['password'],
       host = configService.config['datasource']['host'],
       port = configService.config['datasource']['port'],
       database = configService.config['datasource']['database'])
-    self.cursor = self.connection.cursor()
+    cursor = connection.cursor()
+    return cursor, connection
 
+  def initDb(configService, cursor, connection):
     if configService.config.getboolean('datasource', 'drop-first'):
       with open(configService.config['datasource']['drop-script']) as dropScript:
-        self.cursor.execute(dropScript.read())
-        self.connection.commit()
+        cursor.execute(dropScript.read())
+        connection.commit()
 
     with open(configService.config['datasource']['schema']) as schema:
-      self.cursor.execute(schema.read())
-      self.connection.commit()
+      cursor.execute(schema.read())
+      connection.commit()
+
+  def __init__(self, configService):
+    self.cursor, self.connection = DbService.getConnection(configService)
 
   def addRepo(self, repo: Repo):
     insertQuery = 'insert into repositories(github_id, url, name) ' \
@@ -40,18 +45,6 @@ class DbService:
     insertQuery = 'insert into issues(github_id, url, title, body, language, repository_id)' \
       'values (%s,%s,%s,%s,%s,%s) returning id'
     params = (issue.github_id, issue.url, issue.title, issue.body, issue.language, issue.repoId)
-    print('----------------------------------')
-    print(issue.github_id)
-    print('........')
-    print(issue.url)
-    print('........')
-    print(issue.title[:20])
-    print('........')
-    print(issue.body[:20])
-    print('........')
-    print(issue.language)
-    print('........')
-    print(issue.repoId)
     return self.saveInsert(insertQuery, params, issue, lambda: self.getId(issue))
 
   def getId(self, entity):
@@ -93,3 +86,9 @@ class DbService:
       self.connection.rollback()
       if returnExisting:
         return returnExisting()[0]
+
+  def addArchiveDate(self, archiveDate, succeeded):
+    insertQuery = 'insert into archive_dates(date, succeeded) ' \
+      'values (%s, %s)'
+    self.cursor.execute(insertQuery, (archiveDate.strftime("%Y-%m-%d-%H"), succeeded))
+    self.connection.commit()

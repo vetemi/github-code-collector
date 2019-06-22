@@ -9,7 +9,10 @@ class GithubServiceTest(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     configService = TestConfigService()
-    cls.githubService = GithubService(configService)
+    with open(configService.config['github']['access-tokens']) as f:
+      accessTokens =  f.readlines()
+
+    cls.githubService = GithubService(configService, accessTokens[0])
 
   def test_retrieveCommitsFromEventsContaining(self):
     issue = {

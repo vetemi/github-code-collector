@@ -22,3 +22,8 @@ INSERT INTO patches (id, content, file_id) VALUES
 (1, 'testContent1', 1);
 
 SELECT setval('patches_id_seq', (SELECT MAX(id) from "patches"));
+
+INSERT INTO archive_dates (id, date, succeeded) VALUES
+(1, '2019-06-22-0', TRUE);
+
+SELECT setval('archive_dates_id_seq', (SELECT MAX(id) from "archive_dates"));

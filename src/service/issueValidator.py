@@ -4,8 +4,6 @@ from src.service.bugDetector import BugDetector
 class IssueValidator:
 
   def __init__(self, configService: ConfigService):
-    self.configService = configService
-
     self.bugDetector = BugDetector(configService)
     self.initBugLabels()
 
