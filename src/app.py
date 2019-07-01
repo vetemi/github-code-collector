@@ -31,7 +31,7 @@ def execute(archiveDate, endDate, deltaSteps, token):
 
 def main():
   initDb(configService)
-  start_time = time.time()
+  # startDate = datetime(2011, 2, 12, 0)
   startDate = datetime(2011, 2, 12, 0)
   endDate = datetime.now()
   mailService = MailService(configService)

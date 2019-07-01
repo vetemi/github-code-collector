@@ -10,6 +10,7 @@ class GithubService:
   def __init__(self, configService: ConfigService, accessToken):
     self.configService = configService
     self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
+    self.failed = False
 
   def retrieveCommits(self, issue, repo):
     commits = self.retrieveCommitsFromEvents(issue)
@@ -110,12 +111,16 @@ class GithubService:
     
   def respond(self, response, httpRequest):
     if response.status_code == 200:
+      self.failed = False
       try:
         return response.json()
       except ValueError as e:
         return response.content
     if response.status_code == 403:
+      if self.failed:
+        raise Exception(f'failing multiple times {self.authHeader}')
       # Need to sleep because access token exceeded rate limit
+      self.failed = True
       time.sleep(self.calculateSleepTime())
       return httpRequest()
     return None

@@ -1,0 +1,6 @@
+/bin/
+/lib/
+/include/
+/**/__pycache__
+/.vscode/
+/share/

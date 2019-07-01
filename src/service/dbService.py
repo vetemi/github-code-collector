@@ -35,23 +35,23 @@ class DbService:
   def __init__(self, configService):
     self.cursor, self.connection = DbService.getConnection(configService)
 
+  def addArchiveDate(self, archiveDate, succeeded):
+    insertQuery = 'insert into archive_dates(date, succeeded) ' \
+      'values (%s, %s)'
+    self.cursor.execute(insertQuery, (archiveDate.strftime("%Y-%m-%d-%H"), succeeded))
+    self.connection.commit()
+
   def addRepo(self, repo: Repo):
     insertQuery = 'insert into repositories(github_id, url, name) ' \
       'values (%s,%s,%s) returning id'
     params = (repo.github_id, repo.url, repo.name)
-    return self.saveInsert(insertQuery, params, repo, lambda: self.getId(repo))
+    return self.saveInsert(insertQuery, params, repo, lambda: self.getById(repo))
 
   def addIssue(self, issue: Issue):
     insertQuery = 'insert into issues(github_id, url, title, body, language, repository_id)' \
       'values (%s,%s,%s,%s,%s,%s) returning id'
     params = (issue.github_id, issue.url, issue.title, issue.body, issue.language, issue.repoId)
-    return self.saveInsert(insertQuery, params, issue, lambda: self.getId(issue))
-
-  def getId(self, entity):
-    selectQuery = 'select id from %s where github_id = %s and url = %s'  
-
-    self.cursor.execute(selectQuery, (AsIs(entity.table), entity.github_id, entity.url))
-    return self.cursor.fetchone()
+    return self.saveInsert(insertQuery, params, issue, lambda: self.getByIdAndUrl(issue))
 
   def addCommit(self, commit: Commit):
     insertQuery = 'insert into commits(github_id, url, message, language, issue_id)' \
@@ -87,8 +87,14 @@ class DbService:
       if returnExisting:
         return returnExisting()[0]
 
-  def addArchiveDate(self, archiveDate, succeeded):
-    insertQuery = 'insert into archive_dates(date, succeeded) ' \
-      'values (%s, %s)'
-    self.cursor.execute(insertQuery, (archiveDate.strftime("%Y-%m-%d-%H"), succeeded))
-    self.connection.commit()
+  def getById(self, entity):
+    selectQuery = 'select id from %s where github_id = %s'  
+
+    self.cursor.execute(selectQuery, (AsIs(entity.table), entity.github_id))
+    return self.cursor.fetchone()
+
+  def getByIdAndUrl(self, entity):
+    selectQuery = 'select id from %s where github_id = %s and url = %s'  
+
+    self.cursor.execute(selectQuery, (AsIs(entity.table), entity.github_id, entity.url))
+    return self.cursor.fetchone()

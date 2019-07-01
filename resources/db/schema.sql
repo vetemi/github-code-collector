@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id INT UNIQUE NOT NULL, 
-  url VARCHAR(255) UNIQUE NOT NULL,
+  url VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS repositories (
 CREATE TABLE IF NOT EXISTS issues (
   id SERIAL NOT NULL PRIMARY KEY,
 
-  github_id INT UNIQUE NOT NULL, 
-  url VARCHAR(255) UNIQUE NOT NULL,
+  github_id INT NOT NULL, 
+  url VARCHAR(255) NOT NULL,
   title VARCHAR(255) NOT NULL,
   body TEXT,
   language VARCHAR(10),
@@ -36,7 +36,10 @@ CREATE TABLE IF NOT EXISTS issues (
 
   CONSTRAINT fkey_repo_id
     FOREIGN KEY (repository_id) REFERENCES repositories (id)
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
+
+  CONSTRAINT uq_issues 
+      UNIQUE(github_id, url)
 );
 
 CREATE TABLE IF NOT EXISTS commits (

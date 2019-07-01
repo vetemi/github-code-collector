@@ -33,7 +33,7 @@ class DbServiceTest(unittest.TestCase):
       name = 'testName1')
     expectedId = 1
 
-    resultId = self.dbService.getId(repo)[0]
+    resultId = self.dbService.getById(repo)[0]
     
     self.assertEqual(expectedId, resultId)
 
@@ -69,7 +69,7 @@ class DbServiceTest(unittest.TestCase):
       repoId = 1)
     expectedId = 1
 
-    resultId = self.dbService.getId(issue)[0]
+    resultId = self.dbService.getByIdAndUrl(issue)[0]
     
     self.assertEqual(expectedId, resultId)
 
@@ -109,7 +109,7 @@ class DbServiceTest(unittest.TestCase):
       issueId = 1)
     expectedId = 1
 
-    resultId = self.dbService.getId(commit)[0]
+    resultId = self.dbService.getById(commit)[0]
     
     self.assertEqual(expectedId, resultId)
 
@@ -209,10 +209,11 @@ class DbServiceTest(unittest.TestCase):
 
     self.dbService.addArchiveDate(archiveDate, succeeded)
   
-    string = archiveDate.strftime("%Y-%m-%d-%-H")
+    string = archiveDate.strftime("%Y-%m-%d-%H")
     self.dbService.cursor.execute(
       f"select id from archive_dates where date = '{string}'"
     )
+
     self.assertIsNotNone(self.dbService.cursor.fetchone())
 
   def assertInserted(self, entity, resultId):

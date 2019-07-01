@@ -26,7 +26,7 @@ class CodeCollector():
     self.dbService = DbService(configService)
     self.issueValidator = IssueValidator(configService)
 
-  def collectFor(self, archiveDate):  
+  def collectFor(self, archiveDate):
     event = None
     try:
       content = self.archiveService.retrieveData(archiveDate)

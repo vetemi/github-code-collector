@@ -1,12 +1,18 @@
+import tensorflow as tf
 from tensorflow.keras.models import load_model
-import tensorflow
 import dill
 import ktext.preprocess
+from keras import backend
 
 class BugDetector:
 
   def __init__(self, configService):
-    self.model = load_model(configService.config['issuedetection']['model'])
+    backend.clear_session()
+    self.session = tf.Session()
+    self.graph = tf.get_default_graph()
+    with self.graph.as_default():
+      with self.session.as_default():
+        self.model = load_model(configService.config['issuedetection']['model'])
 
     with open(configService.config['issuedetection']['title-preprocessor'], 'rb') as f:
       self.titlePreproc = dill.load(f)
@@ -22,6 +28,9 @@ class BugDetector:
 
     self.vecTitle = self.titlePreproc.transform([issue['title']])
     self.vecBody = self.bodyPreproc.transform([issue['body']])
-    probs = self.model.predict(x=[self.vecBody, self.vecTitle]).tolist()[0]
+    with self.graph.as_default():
+      with self.session.as_default():
+        probs = self.model.predict(x=[self.vecBody, self.vecTitle]).tolist()[0]
+    
     return probs[0] >= self.threshold
 

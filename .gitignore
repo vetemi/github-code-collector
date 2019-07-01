@@ -8,3 +8,4 @@
 /**/*.dpkl
 /**/*.hdf5
 /share/
+.env

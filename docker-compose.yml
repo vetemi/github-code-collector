@@ -1,0 +1,18 @@
+version: '3'
+services:
+  codedb:
+    command: postgres -c 'max_connections=500'
+    image: postgres
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - /Users/milli/code-collector/volume:/var/lib/postgresql/data
+  codecollector:
+    build: .   
+    command: python -m src.app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - codedb
