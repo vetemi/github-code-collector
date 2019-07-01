@@ -192,12 +192,19 @@ class DbServiceTest(unittest.TestCase):
 
     self.dbService.addArchiveDate(archiveDate, succeeded)
   
-    string = archiveDate.strftime("%Y-%m-%d-%H")
+    string = archiveDate.strftime(self.configService.config['date']['format'])
     self.dbService.cursor.execute(
       f"select id from archive_dates where date = '{string}'"
     )
 
     self.assertIsNotNone(self.dbService.cursor.fetchone())
+
+  def test_getLatestArchiveDate(self):
+    expectedDate = '2100-06-22-00'
+    
+    resultDate = DbService.getLatestArchiveDate(self.dbService.cursor)
+
+    self.assertEqual(expectedDate, resultDate)
 
   def assertInserted(self, entity, resultId):
     selectQuery = 'select id from %s where id = %s'  

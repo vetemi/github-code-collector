@@ -10,10 +10,21 @@ from src.service.mailService import MailService
 from src.service.configService import ConfigService
 
 configService = ConfigService()
+defaultStartDate = datetime(2011, 2, 12, 0)
+
+def getStartDate(cursor):
+  latestDate = DbService.getLatestArchiveDate(cursor)
+  if latestDate:
+    return datetime.strptime(
+      latestDate, 
+      configService.config['date']['format']) + timedelta(hours = 1)
+  else:
+    return defaultStartDate
 
 def initDb(configService):
   cursor, connection = DbService.getConnection(configService)
   DbService.initDb(configService, cursor, connection)
+  return cursor
 
 def execute(archiveDate, endDate, deltaSteps, token):
   codeCollector = CodeCollector(configService, token)
@@ -30,9 +41,8 @@ def execute(archiveDate, endDate, deltaSteps, token):
         archiveDate = archiveDate)
 
 def main():
-  initDb(configService)
-  # startDate = datetime(2011, 2, 12, 0)
-  startDate = datetime(2011, 2, 12, 0)
+  cursor = initDb(configService)
+  startDate = getStartDate(cursor)
   endDate = datetime.now()
   mailService = MailService(configService)
   accessTokens = []
