@@ -19,10 +19,12 @@ def initDb(configService):
 def execute(archiveDate, deltaSteps, token):
   codeCollector = CodeCollector(configService, token)
   delta = timedelta(hours = deltaSteps)
-  while archiveDate < datetime.now():  
+  enddate = datetime.now()
+  while archiveDate < enddate:  
     try:
       codeCollector.collectFor(archiveDate)
       archiveDate = archiveDate + delta
+      enddate = datetime.now()
     except Exception as error:
       raise CollectionError(
         message = 'something went wrong',
