@@ -29,6 +29,8 @@ class CodeCollector():
   def collectFor(self, archiveDate):
     event = None
     try:
+      if self.dbService.archiveDateExists(archiveDate):
+        return None
       content = self.archiveService.retrieveData(archiveDate)
       lines = content.splitlines()
       for line in lines:

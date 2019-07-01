@@ -32,16 +32,16 @@ class DbService:
       cursor.execute(schema.read())
       connection.commit()
 
-  def getLatestArchiveDate(cursor):
-    selectQuery = 'select date from archive_dates order by date desc limit 1'
-    cursor.execute(selectQuery)
-    result = cursor.fetchone()
-    if result:
-      return result[0]
-
   def __init__(self, configService):
     self.configService = configService
     self.cursor, self.connection = DbService.getConnection(self.configService)
+
+  def archiveDateExists(self, archiveDate):
+    selectQuery = 'select id from archive_dates where date = %s and succeeded = TRUE'  
+    formattedDate = archiveDate.strftime(self.configService.config['date']['format'])
+    
+    self.cursor.execute(selectQuery, (formattedDate,))
+    return self.cursor.fetchone()
 
   def addArchiveDate(self, archiveDate, succeeded):
     insertQuery = 'insert into archive_dates(date, succeeded) ' \

@@ -10,26 +10,16 @@ from src.service.mailService import MailService
 from src.service.configService import ConfigService
 
 configService = ConfigService()
-defaultStartDate = datetime(2011, 2, 12, 0)
-
-def getStartDate(cursor):
-  latestDate = DbService.getLatestArchiveDate(cursor)
-  if latestDate:
-    return datetime.strptime(
-      latestDate, 
-      configService.config['date']['format']) + timedelta(hours = 1)
-  else:
-    return defaultStartDate
 
 def initDb(configService):
   cursor, connection = DbService.getConnection(configService)
   DbService.initDb(configService, cursor, connection)
   return cursor
 
-def execute(archiveDate, endDate, deltaSteps, token):
+def execute(archiveDate, deltaSteps, token):
   codeCollector = CodeCollector(configService, token)
   delta = timedelta(hours = deltaSteps)
-  while archiveDate < endDate:  
+  while archiveDate < datetime.now():  
     try:
       codeCollector.collectFor(archiveDate)
       archiveDate = archiveDate + delta
@@ -42,15 +32,14 @@ def execute(archiveDate, endDate, deltaSteps, token):
 
 def main():
   cursor = initDb(configService)
-  startDate = getStartDate(cursor)
-  endDate = datetime.now()
+  startDate = datetime(2011, 2, 12, 0)
   mailService = MailService(configService)
   accessTokens = []
   with open(configService.config['github']['access-tokens']) as f:
     accessTokens = f.readlines()
     
   with concurrent.futures.ThreadPoolExecutor(max_workers=len(accessTokens)) as executor:
-    futures = [executor.submit(execute, startDate + timedelta(hours = idx), endDate, len(accessTokens), token) 
+    futures = [executor.submit(execute, startDate + timedelta(hours = idx), len(accessTokens), token) 
       for idx, token in enumerate(accessTokens)]
     for future in concurrent.futures.as_completed(futures):
       try:
