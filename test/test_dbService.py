@@ -152,28 +152,11 @@ class DbServiceTest(unittest.TestCase):
 
     self.assertInserted(file, resultId)
 
-
-  def test_addFileExistingUrlAndGHId(self):
+  def test_addFile(self):
     file = File(
-      github_id = 'testSha1',
-      url = 'testUrl1',
-      name = 'test_addFileExistingUrlAndGHId',
-      extension = 'ext',
-      content = 'test_addFileExistingUrlAndGHId',
-      hash = 100,
-      commitId = 1
-    )
-    expectedId = 1
-
-    resultId = self.dbService.addFile(file)
-
-    self.assertEqual(resultId, expectedId)
-
-  def test_addFileExistingHashAndExt(self):
-    file = File(
-      github_id = 'test_addFileExistingHash',
-      url = 'test_addFileExistingHash',
-      name = 'test_addFileExistingHash',
+      github_id = 'test_addFile',
+      url = 'test_addFile',
+      name = 'test_addFile',
       extension = 'testExt1',
       content = 'testContent1',
       hash = 1,

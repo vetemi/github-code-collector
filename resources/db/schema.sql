@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS files (
   name VARCHAR(512) NOT NULL,
   extension VARCHAR(20) NOT NULL,
   content TEXT NOT NULL,
-  hash NUMERIC UNIQUE NOT NULL,
+  hash NUMERIC NOT NULL,
   commit_id INT NOT NULL,
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -79,9 +79,6 @@ CREATE TABLE IF NOT EXISTS files (
   CONSTRAINT fkey_commit_id
     FOREIGN KEY (commit_id) REFERENCES commits (id)
     ON UPDATE CASCADE,
-
-  CONSTRAINT uq_files_url_github_id 
-    UNIQUE(github_id, url),
 
   CONSTRAINT uq_files_hash_extension 
     UNIQUE(hash, extension)
