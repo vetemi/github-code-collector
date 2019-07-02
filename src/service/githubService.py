@@ -12,7 +12,7 @@ class GithubService:
 
   def __init__(self, configService: ConfigService, accessToken):
     self.configService = configService
-    self.mailService = MailService()
+    self.mailService = MailService(configService)
     self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
     self.failed = False
 
