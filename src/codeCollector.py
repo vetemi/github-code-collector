@@ -98,11 +98,7 @@ class CodeCollector():
 
   def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
-    content = None
-    try:
-      content = self.retrieveFile(githubFile['raw_url'])
-    except requests.exceptions.ConnectionError:
-      content = self.retrieveFile(githubFile['raw_url'])
+    content = self.retrieveFile(githubFile['raw_url'])
     hash = mmh3.hash128(content, signed = True)
     return File(url = githubFile['raw_url'],
       github_id = githubFile['sha'],
@@ -113,4 +109,7 @@ class CodeCollector():
       commitId = commitId)
 
   def retrieveFile(self, url):
-    return requests.get(githubFile['raw_url']).content.decode('utf-8', 'ignore')
+    try:
+      return self.retrieveFile(url)
+    except requests.exceptions.ConnectionError:
+      return self.retrieveFile(url)
