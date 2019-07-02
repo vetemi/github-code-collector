@@ -46,7 +46,7 @@ class MailService:
     msg['Subject'] = 'Github Code Collector - Authentication Failed'
     msg['From'] = self.configService.config['mail']['from']
     msg['To'] = self.configService.config['mail']['to']
-    msg.set_content(f'Token with Header: {self.authHeader} is failing multiple times')
+    msg.set_content(f'Token with Header: {authHeader} is failing multiple times')
     return msg
 
   def sendMail(self, message):
