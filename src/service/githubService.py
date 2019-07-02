@@ -141,9 +141,10 @@ class GithubService:
     return httpRequest()
 
   def calculateSleepTime(self, response):
-    waitTime = response.headers['Retry-After']
-    if waitTime and waitTime > 0:
-      return waitTime + 5
+    if 'Retry-After' in response.headers:
+      waitTime = response.headers['Retry-After']
+      if waitTime and waitTime > 0:
+        return waitTime + 5
 
     response = requests.get(
         url=self.configService.config['github']['rate-limit-url'], 
