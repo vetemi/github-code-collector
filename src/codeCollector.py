@@ -19,6 +19,7 @@ class CodeCollector():
     self.failedEvent = None
 
   def processFor(self, archiveDate):
+    event = None
     try:
       if not self.dbService.archiveDateExists(archiveDate):
         content = self.archiveService.retrieveData(archiveDate)
