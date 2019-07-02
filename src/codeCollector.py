@@ -1,24 +1,12 @@
 import concurrent.futures
 import json
-import os
-import requests
-
-import mmh3
-import langdetect
-
-from src.error.InvalidTokenError import InvalidTokenError
-
-from src.model.commit import Commit
-from src.model.file import File
-from src.model.issue import Issue
-from src.model.patch import Patch
-from src.model.repo import Repo
 
 from src.service.archiveService import ArchiveService
+from src.service.configService import ConfigService
 from src.service.dbService import DbService
 from src.service.githubService import GithubService
 from src.service.issueValidator import IssueValidator
-from src.service.configService import ConfigService
+from src.service.modelCreationService import ModelCreationService
 
 class CodeCollector():
 
@@ -27,9 +15,10 @@ class CodeCollector():
     self.ghService = GithubService(configService, accessToken)
     self.dbService = DbService(configService)
     self.issueValidator = IssueValidator(configService)
+    self.modelCreator = ModelCreationService()
+    self.failedEvent = None
 
-  def collectFor(self, archiveDate):
-    event = None
+  def processFor(self, archiveDate):
     try:
       if self.dbService.archiveDateExists(archiveDate):
         return None
@@ -37,79 +26,45 @@ class CodeCollector():
       lines = content.splitlines()
       for line in lines:
         event = json.loads(line)
-        if self.issueValidator.validBugIssue(event):
-          self.process(event)
-    except InvalidTokenError as error:
-      self.dbService.addArchiveDate(archiveDate, False)
-      raise error
+        self.processEvent(event)
+      self.dbService.addArchiveDate(archiveDate, True)
     except Exception as error:
       self.failedEvent = event
       self.dbService.addArchiveDate(archiveDate, False)
       raise error
-    self.dbService.addArchiveDate(archiveDate, True)
 
-  def process(self, issueEvent):
-    issue = issueEvent['payload']['issue']
-    repo = issueEvent['repo']
+  def processEvent(self, event):
+    repo = self.retrieveRepoFrom(event)
+    validIssue = self.retrieveValidIssueFrom(event, repo['name'])
+    if validIssue:
+      self.collectData(validIssue, repo)
+
+  def retrieveRepoFrom(self, event):
+    if 'repo' in event:
+      return event['repo']
+    if 'repository' in event:
+      return event['repository']
+
+  def retrieveValidIssueFrom(self, event, repoName):
+    if (event['type'] == 'IssuesEvent' and event['payload']['action'] == 'closed'):
+      issue = event['payload']['issue']
+      if isinstance(issue, int):
+        issue = self.ghService.retrieveIssue(repoName, issue)
+      if issue and self.issueValidator.validBugIssue(issue):
+        return issue
+
+  def collectData(self, issue, repo):
     commits = self.ghService.retrieveCommits(issue, repo)
     if commits:
-      repoId = self.dbService.addRepo(self.createRepo(repo))
-      issueId = self.dbService.addIssue(self.createIssue(issue, repoId))
+      repoId = self.dbService.addRepo(self.modelCreator.createRepo(repo))
+      issueId = self.dbService.addIssue(self.modelCreator.createIssue(issue, repoId))
       for commit in commits:
-        commitId = self.dbService.addCommit(self.createCommit(commit, issueId))
+        commitId = self.dbService.addCommit(self.modelCreator.createCommit(commit, issueId))
         if commitId:
-          self.processFilepatches(commit, commitId)
+          self.collectFilepatches(commit, commitId)
 
-  def processFilepatches(self, commit, commitId):
+  def collectFilepatches(self, commit, commitId):
     for codeFile in commit['files']:
       if (codeFile['raw_url'] and 'patch' in codeFile):
-        fileId = self.dbService.addFile(self.createFile(codeFile, commitId))
+        fileId = self.dbService.addFile(self.modelCreator.createFile(codeFile, commitId))
         self.dbService.addPatch(Patch(codeFile['patch'], fileId))   
-                
-  def createRepo(self, githubRepo):
-    return Repo(
-      url = githubRepo['url'],
-      github_id = githubRepo['id'],
-      name = githubRepo['name']) 
-
-  def createIssue(self, githubIssue, repoId):
-    lang = self.detectLang(githubIssue['body'])
-    return Issue(url = githubIssue['url'],
-      github_id = githubIssue['id'],
-      title = githubIssue['title'],
-      body = githubIssue['body'],
-      language = lang,
-      repoId = repoId)
-
-  def createCommit(self, githubCommit, issueId):
-    lang = self.detectLang(githubCommit['commit']['message'])
-    return Commit(url = githubCommit['url'],
-      github_id = githubCommit['sha'],
-      message = githubCommit['commit']['message'],
-      language = lang,
-      issueId = issueId)
-
-  def detectLang(self, text):
-    if text:
-      try:
-        return langdetect.detect(text) 
-      except:
-        pass
-
-  def createFile(self, githubFile, commitId):
-    filename, fileExtension = os.path.splitext(githubFile['filename'])
-    content = self.retrieveFile(githubFile['raw_url'])
-    hash = mmh3.hash128(content, signed = True)
-    return File(url = githubFile['raw_url'],
-      github_id = githubFile['sha'],
-      name = filename,
-      extension = fileExtension,
-      content = content,
-      hash = hash,
-      commitId = commitId)
-
-  def retrieveFile(self, url):
-    try:
-      return requests.get(url).content.decode('utf-8', 'ignore')
-    except requests.exceptions.ConnectionError:
-      return requests.get(url).content.decode('utf-8', 'ignore')

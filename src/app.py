@@ -23,7 +23,7 @@ def execute(archiveDate, deltaSteps, token):
   enddate = datetime.now()
   while archiveDate < enddate:  
     try:
-      codeCollector.collectFor(archiveDate)
+      codeCollector.processFor(archiveDate)
       archiveDate = archiveDate + delta
       enddate = datetime.now()
     except InvalidTokenError:

@@ -44,4 +44,13 @@ class GithubServiceTest(unittest.TestCase):
     commits = self.githubService.retrieveCommitsFromPullRequest(issue, repo)
     
     self.assertEqual(len(commits), 9)
+
+  def test_retrieveValidIssueFromRequest(self):
+    title = 'Duplicates when sorting'
+    repoName = 'codeschluss/wupportal'
+    issueNumber = 98
+
+    issue = self.githubService.retrieveIssue(repoName, issueNumber)
+
+    self.assertEqual(title, issue['title'])
     

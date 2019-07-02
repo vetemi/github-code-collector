@@ -14,7 +14,11 @@ class GithubService:
     self.configService = configService
     self.mailService = MailService(configService)
     self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
+    self.baseUrl = self.configService.config['github']['api-repos-url']
     self.failed = False
+
+  def retrieveIssue(self, repoName, issueNumber):
+    return self.get(f'{self.baseUrl}/{repoName}/issues/{issueNumber}')
 
   def retrieveCommits(self, issue, repo):
     commits = self.retrieveCommitsFromEvents(issue)
@@ -56,8 +60,7 @@ class GithubService:
       if commitSHAs:
         for commitSHA in commitSHAs:
           # This is necessary because it's not possible to retrieve the actual patches with GraphQL API
-          baseUrl = self.configService.config['github']['api-repos-url']
-          commit = self.get(f'{baseUrl}/{repo["name"]}/commits/{commitSHA}')
+          commit = self.get(f'{self.baseUrl}/{repo["name"]}/commits/{commitSHA}')
 
           if commit:
             commits.append(commit)
@@ -115,20 +118,27 @@ class GithubService:
     
   def respond(self, response, httpRequest):
     if response.status_code == 200:
-      self.failed = False
-      try:
-        return response.json()
-      except ValueError as e:
-        return response.content
+      return self.successResponse(response)
     if response.status_code == 403:
-      if self.failed:
-        self.mailService.sendAuthFailedMail(self.authHeader)
-        raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
-      # Need to sleep because access token exceeded rate limit
-      self.failed = True
-      time.sleep(self.calculateSleepTime())
-      return httpRequest()
-    return None
+      return self.authFailedResponse(response, httpRequest)
+    self.failed = False
+
+  def successResponse(self, response):
+    self.failed = False
+    try:
+      return response.json()
+    except ValueError as e:
+      return response.content
+
+  def authFailedResponse(self, response, httpRequest):
+    if self.failed:
+      self.mailService.sendAuthFailedMail(self.authHeader)
+      raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
+
+    self.failed = True
+    # Need to sleep because access token exceeded rate limit
+    time.sleep(self.calculateSleepTime())
+    return httpRequest()
 
   def calculateSleepTime(self):
     response = requests.get(

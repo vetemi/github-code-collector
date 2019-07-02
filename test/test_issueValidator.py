@@ -49,31 +49,23 @@ class IssueValidatorTest(unittest.TestCase):
 
 
   def test_validBugIssue(self):
-    event = {
-      'type' : 'IssuesEvent',
-      'payload' : {
-        'action' : 'closed',
-        'issue': {
-          'labels': [
-            { 'name' : 'bug'}
-          ] 
-        }
-      }
+    issue = {
+      'labels': [
+        { 'name' : 'bug' }
+      ] 
     }
 
-    result = self.issueValidator.validBugIssue(event)
+    result = self.issueValidator.validBugIssue(issue)
 
     self.assertTrue(result)
 
   def test_invalidBugIssue(self):
-    event = {
-      'type' : 'IssuesEvent',
-      'payload' : {
-        'action' : 'closed',
-        'issue': 1
-      }
+    issue = {
+      'labels': [
+        { 'name' : 'not a bug' }
+      ] 
     }
 
-    result = self.issueValidator.validBugIssue(event)
+    result = self.issueValidator.validBugIssue(issue)
 
     self.assertFalse(result)

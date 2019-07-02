@@ -1,6 +1,4 @@
 import unittest
-import requests
-import mmh3
 
 from src.codeCollector import CodeCollector
 
@@ -14,89 +12,62 @@ class CodeCollectorTest(unittest.TestCase):
     with open(configService.config['github']['access-tokens']) as f:
       accessTokens =  f.readlines()
 
-    cls.codeCollector = CodeCollector(configService, accessTokens[0])
+    cls.codeCollecotr = CodeCollector(configService, accessTokens[0])
 
-  def test_createRepo(self):
-      github_id = 1
-      name = 'owner/repo'
-      url = 'http://localhost'
-      repo = {
-        'id' : github_id,
-        'name' : name,
-        'url' : url
+  def test_retrieveRepoFromWithRepo(self):
+    event = {
+      'repo' : {
+        'name' : 'test_retrieveRepoFromWithRepo'
       }
-
-      created = self.codeCollector.createRepo(repo)
-
-      self.assertEqual(created.github_id, github_id)
-      self.assertEqual(created.name, name)
-      self.assertEqual(created.url, url)
-
-  def test_createIssue(self):
-    github_id = 1
-    title = 'Das ist ein Titel'
-    body = 'Dieser Text beschreibt etwas'
-    url = 'http://localhost'
-    issue = {
-      'id' : github_id,
-      'title' : title,
-      'body' : body,
-      'url' : url
     }
-    repoId = 2
 
-    created = self.codeCollector.createIssue(issue, repoId)
+    repo = self.codeCollecotr.retrieveRepoFrom(event)
 
-    self.assertEqual(created.language, 'de')
-    self.assertEqual(created.github_id, github_id)
-    self.assertEqual(created.body, body)
-    self.assertEqual(created.title, title)
-    self.assertEqual(created.url, url)
-    self.assertEqual(created.repoId, repoId)
+    self.assertEqual(event['repo']['name'], repo['name'])
 
-  def test_createCommit(self):
-    sha = '1s'
-    message = 'Dieser Text beschreibt etwas und hat einen Log: ' \
-      'Error: Runtime Exception at line 10'
-    url = 'http://localhost'
-    commit = {
-      'sha' : sha,
-      'commit' : {
-        'message' : message
-      },
-      'url' : url
+  def test_retrieveRepoFromWithRepository(self):
+    event = {
+      'repository' : {
+        'name' : 'test_retrieveRepoFromWithRepository'
+      }
     }
-    issueId = 2
 
-    created = self.codeCollector.createCommit(commit, issueId)
+    repo = self.codeCollecotr.retrieveRepoFrom(event)
 
-    self.assertEqual(created.url, url)
-    self.assertEqual(created.github_id, sha)
-    self.assertEqual(created.message, message)
-    self.assertEqual(created.language, 'de')
-    self.assertEqual(created.issueId, issueId)
+    self.assertEqual(event['repository']['name'], repo['name'])
 
-  def test_createFile(self):
-    raw_url = 'https://gist.githubusercontent.com/reuven/5660728/raw/ff8cfe2d80f15b6569c9cf2644163f00105d8612/test-file.txt'
-    contents_url = 'http://localhost/contents_url'
-    sha = 'sha1'
-    patch = 'patch'
-    file = {
-      'filename' : 'path/to/file.py',
-      'raw_url' : raw_url,
-      'contents_url' : contents_url,
-      'sha' : sha,
-      'patch' : patch
+  def test_retrieveValidIssueFromPayload(self):
+    repoName = 'test/retrieveValidIssueFromSuccess'
+    event = {
+      'type' : 'IssuesEvent',
+      'payload': {
+        'issue': {
+          'body' : 'test_retrieveValidIssueFromSuccess',
+          'title' : 'test_retrieveValidIssueFromSuccess',
+          'labels' : [
+            { 'name' :  'bug' }
+          ]
+        },
+        'action': 'closed'
+      }
     }
-    commitId = 2
-    content = requests.get(url=raw_url).content.decode('utf-8')
-    hash = mmh3.hash128(content, signed = True)
-    
-    created = self.codeCollector.createFile(file, commitId)
 
-    self.assertEqual(created.url, raw_url)
-    self.assertEqual(created.github_id, sha)
-    self.assertEqual(created.name, 'path/to/file')
-    self.assertEqual(created.extension, '.py')
-    self.assertEqual(created.content, content)
-    self.assertEqual(created.hash, hash)
+    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repoName)
+
+    self.assertEqual(event['payload']['issue']['title'], issue['title'])
+
+  def test_retrieveValidIssueFromRequest(self):
+    title = 'Duplicates when sorting'
+    repoName = 'codeschluss/wupportal'
+    event = {
+      'type' : 'IssuesEvent',
+      'payload': {
+        'issue': 98,
+        'action': 'closed'
+      }
+    }
+
+    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repoName)
+
+    self.assertEqual(title, issue['title'])
+

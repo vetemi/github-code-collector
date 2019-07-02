@@ -11,7 +11,7 @@ services:
       - /Users/milli/code-collector/volume:/var/lib/postgresql/data
   codecollector:
     build: .   
-    command: python -m src.app
+    command: python -u -m src.app
     ports:
       - "8000:8000"
     depends_on:
