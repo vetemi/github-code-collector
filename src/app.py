@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import time
 
 from src.error.collectionError import CollectionError
+from src.error.InvalidTokenError import InvalidTokenError
 
 from src.codeCollector import CodeCollector
 from src.service.dbService import DbService
@@ -25,6 +26,8 @@ def execute(archiveDate, deltaSteps, token):
       codeCollector.collectFor(archiveDate)
       archiveDate = archiveDate + delta
       enddate = datetime.now()
+    except InvalidTokenError:
+      return None
     except Exception as error:
       raise CollectionError(
         message = 'something went wrong',
@@ -45,7 +48,7 @@ def main():
       for idx, token in enumerate(accessTokens)]
     for future in concurrent.futures.as_completed(futures):
       try:
-        result = future.result()
+        future.result()
       except CollectionError as error:
         mailService.sendErrorMail(error)
         raise error        

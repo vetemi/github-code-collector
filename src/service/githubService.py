@@ -3,12 +3,16 @@ import json
 import requests
 import time
 
+from src.error.InvalidTokenError import InvalidTokenError
+
 from src.service.configService import ConfigService
+from src.service.mailService import MailService
 
 class GithubService:
 
   def __init__(self, configService: ConfigService, accessToken):
     self.configService = configService
+    self.mailService = MailService()
     self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
     self.failed = False
 
@@ -118,7 +122,8 @@ class GithubService:
         return response.content
     if response.status_code == 403:
       if self.failed:
-        raise Exception(f'failing multiple times {self.authHeader}')
+        self.mailService.sendAuthFailedMail(self.authHeader)
+        raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
       # Need to sleep because access token exceeded rate limit
       self.failed = True
       time.sleep(self.calculateSleepTime())

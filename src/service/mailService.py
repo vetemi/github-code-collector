@@ -38,6 +38,17 @@ class MailService:
     msg.set_content(f'Everything processed from: {str(fromDate)} until: {str(untilDate)}')
     return msg
 
+  def sendAuthFailedMail(self, authHeader):
+    self.sendMail(self.createAuthFailedMessage(authHeader))
+
+  def createAuthFailedMessage(self, authHeader):
+    msg = EmailMessage()
+    msg['Subject'] = 'Github Code Collector - Authentication Failed'
+    msg['From'] = self.configService.config['mail']['from']
+    msg['To'] = self.configService.config['mail']['to']
+    msg.set_content(f'Token with Header: {self.authHeader} is failing multiple times')
+    return msg
+
   def sendMail(self, message):
     mailServer = self.createServer()
     mailServer.send_message(message)

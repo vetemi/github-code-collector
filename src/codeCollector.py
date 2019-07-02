@@ -6,6 +6,8 @@ import requests
 import mmh3
 import langdetect
 
+from src.error.InvalidTokenError import InvalidTokenError
+
 from src.model.commit import Commit
 from src.model.file import File
 from src.model.issue import Issue
@@ -37,6 +39,9 @@ class CodeCollector():
         event = json.loads(line)
         if self.issueValidator.validBugIssue(event):
           self.process(event)
+    except InvalidTokenError as error:
+      self.dbService.addArchiveDate(archiveDate, False)
+      raise error
     except Exception as error:
       self.failedEvent = event
       self.dbService.addArchiveDate(archiveDate, False)
@@ -93,7 +98,11 @@ class CodeCollector():
 
   def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
-    content = requests.get(githubFile['raw_url']).content.decode('utf-8', 'ignore')
+    content = None
+    try:
+      content = self.retrieveFile(githubFile['raw_url'])
+    except requests.exceptions.ConnectionError:
+      content = self.retrieveFile(githubFile['raw_url'])
     hash = mmh3.hash128(content, signed = True)
     return File(url = githubFile['raw_url'],
       github_id = githubFile['sha'],
@@ -103,3 +112,5 @@ class CodeCollector():
       hash = hash,
       commitId = commitId)
 
+  def retrieveFile(self, url):
+    return requests.get(githubFile['raw_url']).content.decode('utf-8', 'ignore')
