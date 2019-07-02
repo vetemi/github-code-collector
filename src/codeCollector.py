@@ -110,6 +110,6 @@ class CodeCollector():
 
   def retrieveFile(self, url):
     try:
-      return self.retrieveFile(url)
+      return requests.get(url).content.decode('utf-8', 'ignore')
     except requests.exceptions.ConnectionError:
-      return self.retrieveFile(url)
+      return requests.get(url).content.decode('utf-8', 'ignore')
