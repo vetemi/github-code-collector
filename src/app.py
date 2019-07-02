@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import time
 
 from src.error.collectionError import CollectionError
+from src.error.InvalidTokenError import InvalidTokenError
 
 from src.codeCollector import CodeCollector
 from src.service.dbService import DbService
@@ -25,7 +26,8 @@ def execute(archiveDate, deltaSteps, token):
       while archiveDate < datetime.now():  
         codeCollector.processFor(archiveDate)
         archiveDate = archiveDate + delta
-        
+    except InvalidTokenError:
+      return None
     except Exception as error:
       raise CollectionError(
         message = 'something went wrong',
