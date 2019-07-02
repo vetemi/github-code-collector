@@ -108,10 +108,12 @@ class GithubService:
     return commitSHAs
 
   def get(self, url):
+    time.sleep(1)
     response = requests.get(url=url, headers=self.authHeader)
     return self.respond(response, lambda: self.get(url))
   
   def post(self, url, body):
+    time.sleep(1)
     response = requests.post(
       url=url, headers=self.authHeader, data=body)
     return self.respond(response, lambda: self.post(url, body))
