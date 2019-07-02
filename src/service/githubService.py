@@ -137,10 +137,14 @@ class GithubService:
 
     self.failed = True
     # Need to sleep because access token exceeded rate limit
-    time.sleep(self.calculateSleepTime())
+    time.sleep(self.calculateSleepTime(response))
     return httpRequest()
 
-  def calculateSleepTime(self):
+  def calculateSleepTime(self, response):
+    waitTime = response.headers['Retry-After']
+    if waitTime and waitTime > 0:
+      return waitTime + 5
+
     response = requests.get(
         url=self.configService.config['github']['rate-limit-url'], 
         headers=self.authHeader).json()
