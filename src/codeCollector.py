@@ -20,14 +20,13 @@ class CodeCollector():
 
   def processFor(self, archiveDate):
     try:
-      if self.dbService.archiveDateExists(archiveDate):
-        return None
-      content = self.archiveService.retrieveData(archiveDate)
-      lines = content.splitlines()
-      for line in lines:
-        event = json.loads(line)
-        self.processEvent(event)
-      self.dbService.addArchiveDate(archiveDate, True)
+      if not self.dbService.archiveDateExists(archiveDate):
+        content = self.archiveService.retrieveData(archiveDate)
+        lines = content.splitlines()
+        for line in lines:
+          event = json.loads(line)
+          self.processEvent(event)
+        self.dbService.addArchiveDate(archiveDate, True)
     except Exception as error:
       self.failedEvent = event
       self.dbService.addArchiveDate(archiveDate, False)

@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import time
 
 from src.error.collectionError import CollectionError
-from src.error.InvalidTokenError import InvalidTokenError
 
 from src.codeCollector import CodeCollector
 from src.service.dbService import DbService
@@ -18,16 +17,15 @@ def initDb(configService):
   return cursor
 
 def execute(archiveDate, deltaSteps, token):
-  codeCollector = CodeCollector(configService, token)
-  delta = timedelta(hours = deltaSteps)
-  enddate = datetime.now()
-  while archiveDate < enddate:  
     try:
-      codeCollector.processFor(archiveDate)
-      archiveDate = archiveDate + delta
-      enddate = datetime.now()
-    except InvalidTokenError:
-      return None
+      codeCollector = CodeCollector(configService, token)
+      delta = timedelta(hours = deltaSteps)
+      print(f'Thread with token started: {token}')
+      
+      while archiveDate < datetime.now():  
+        codeCollector.processFor(archiveDate)
+        archiveDate = archiveDate + delta
+        
     except Exception as error:
       raise CollectionError(
         message = 'something went wrong',
