@@ -51,8 +51,9 @@ class CodeCollector():
   def retrieveValidIssueFrom(self, event, repo):
     if event['payload']['action'] == 'closed':
       issue = event['payload']['issue']
-      if isinstance(issue, int) and 'name' in repo:
-        issue = self.ghService.retrieveIssue(repo['name'], issue)
+      if isinstance(issue, int):
+        issue = (self.ghService.retrieveIssue(repo['name'], issue) if repo and 'name' in repo
+          else None) 
       if issue and self.issueValidator.validBugIssue(issue):
         return issue
 

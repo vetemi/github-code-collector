@@ -37,7 +37,7 @@ class CodeCollectorTest(unittest.TestCase):
     self.assertEqual(event['repository']['name'], repo['name'])
 
   def test_retrieveValidIssueFromPayload(self):
-    repoName = 'test/retrieveValidIssueFromSuccess'
+    repo = { 'name' : 'test/retrieveValidIssueFromSuccess' }
     event = {
       'type' : 'IssuesEvent',
       'payload': {
@@ -52,13 +52,14 @@ class CodeCollectorTest(unittest.TestCase):
       }
     }
 
-    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repoName)
+    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repo)
+    print(issue)
 
     self.assertEqual(event['payload']['issue']['title'], issue['title'])
 
   def test_retrieveValidIssueFromRequest(self):
     title = 'Duplicates when sorting'
-    repoName = 'codeschluss/wupportal'
+    repo = { 'name' : 'codeschluss/wupportal' }
     event = {
       'type' : 'IssuesEvent',
       'payload': {
@@ -67,7 +68,7 @@ class CodeCollectorTest(unittest.TestCase):
       }
     }
 
-    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repoName)
+    issue = self.codeCollecotr.retrieveValidIssueFrom(event, repo)
 
     self.assertEqual(title, issue['title'])
 
