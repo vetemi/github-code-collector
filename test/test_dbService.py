@@ -94,7 +94,7 @@ class DbServiceTest(unittest.TestCase):
       github_id = 1, 
       title = 'testTitle1', 
       body = 'testBody1',
-      labeled = True
+      labeled = True,
       language = 'de',
       repoId = 1)
     expectedId = 1

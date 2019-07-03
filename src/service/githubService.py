@@ -109,7 +109,6 @@ class GithubService:
 
   def get(self, url, contentOnly = False):
     try:
-      time.sleep(1)
       response = requests.get(url=url, headers=self.authHeader)
     except requests.exceptions.ConnectionError:
       time.sleep(2)
@@ -119,7 +118,6 @@ class GithubService:
     
   def post(self, url, body, contentOnly = False):
     try:
-      time.sleep(1)
       response = requests.post(
         url=url, headers=self.authHeader, data=body)
     except requests.exceptions.ConnectionError:

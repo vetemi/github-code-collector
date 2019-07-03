@@ -58,7 +58,7 @@ class DbService:
 
   def addIssue(self, issue: Issue):
     insertQuery = 'insert into issues(github_id, url, title, body, labeled, language, repository_id)' \
-      'values (%s,%s,%s,%s,%s,%s) returning id'
+      'values (%s,%s,%s,%s,%s,%s,%s) returning id'
     params = (issue.github_id, issue.url, issue.title, issue.body, issue.labeled, issue.language, issue.repoId)
     return self.saveInsert(insertQuery, params, issue, lambda: self.getByIdAndUrl(issue))
 
