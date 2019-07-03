@@ -12,7 +12,6 @@ class GithubService:
 
   def __init__(self, configService: ConfigService, accessToken):
     self.configService = configService
-    self.mailService = MailService(configService)
     self.authHeader = {'Authorization': f'Bearer {accessToken.strip()}'}
     self.baseUrl = self.configService.config['github']['api-repos-url']
     self.failed = False
@@ -148,7 +147,6 @@ class GithubService:
     if not self.unavailableReason(response):  
       if self.failed:
         print(f'Response of multiple failing requests: {response.content} and {response.url}')
-        self.mailService.sendAuthFailedMail(self.authHeader)
         raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
 
       self.failed = True

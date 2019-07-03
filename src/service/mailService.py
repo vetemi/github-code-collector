@@ -23,6 +23,7 @@ class MailService:
     msg['To'] = self.configService.config['mail']['to']
     msg.set_content(
       f'Archive Date: {str(error.archiveDate)}' \
+      f'\n\nToken: {str(error.token)}' \
       f'\n\nFailed Event: {str(error.event)}' \
       f'\n\nError: \n{traceback.format_exc()}')
     return msg
@@ -36,17 +37,6 @@ class MailService:
     msg['From'] = self.configService.config['mail']['from']
     msg['To'] = self.configService.config['mail']['to']
     msg.set_content(f'Everything processed from: {str(fromDate)} until: {str(untilDate)}')
-    return msg
-
-  def sendAuthFailedMail(self, authHeader):
-    self.sendMail(self.createAuthFailedMessage(authHeader))
-
-  def createAuthFailedMessage(self, authHeader):
-    msg = EmailMessage()
-    msg['Subject'] = 'Github Code Collector - Authentication Failed'
-    msg['From'] = self.configService.config['mail']['from']
-    msg['To'] = self.configService.config['mail']['to']
-    msg.set_content(f'Token with Header: {authHeader} is failing multiple times')
     return msg
 
   def sendMail(self, message):

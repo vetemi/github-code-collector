@@ -28,7 +28,8 @@ class CodeCollector():
         lines = content.splitlines()
         for line in lines:
           event = json.loads(line)
-          self.processEvent(event)
+          if event['type'] == 'IssuesEvent':
+            self.processEvent(event)
         self.dbService.addArchiveDate(archiveDate, True)
     except Exception as error:
       self.failedEvent = event
@@ -48,7 +49,7 @@ class CodeCollector():
       return event['repository']
 
   def retrieveValidIssueFrom(self, event, repoName):
-    if (event['type'] == 'IssuesEvent' and event['payload']['action'] == 'closed'):
+    if event['payload']['action'] == 'closed':
       issue = event['payload']['issue']
       if isinstance(issue, int):
         issue = self.ghService.retrieveIssue(repoName, issue)

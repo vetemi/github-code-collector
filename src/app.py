@@ -1,6 +1,7 @@
 import concurrent.futures
 from datetime import datetime, timedelta
 import time
+import traceback
 
 from src.error.collectionError import CollectionError
 from src.error.InvalidTokenError import InvalidTokenError
@@ -17,23 +18,25 @@ def initDb(configService):
   DbService.initDb(configService, cursor, connection)
   return cursor
 
-def execute(archiveDate, deltaSteps, token):
-    try:
-      codeCollector = CodeCollector(configService, token)
-      delta = timedelta(hours = deltaSteps)
-      print(f'Thread with token started: {token}')
-      
-      while archiveDate < datetime.now():  
-        codeCollector.processFor(archiveDate)
-        archiveDate = archiveDate + delta
-    except InvalidTokenError:
-      return None
-    except Exception as error:
-      raise CollectionError(
-        message = 'something went wrong',
+def execute(archiveDate, deltaSteps, token, mailService):
+  try:
+    codeCollector = CodeCollector(configService, token)
+    delta = timedelta(hours = deltaSteps)
+    print(f'Thread with token started: {token}')
+    
+    while archiveDate < datetime.now():  
+      codeCollector.processFor(archiveDate)
+      archiveDate = archiveDate + delta
+  except Exception as error:
+    print(f'Thread Error: {token}')
+    print(traceback.format_exc())
+    mailService.sendErrorMail(
+      CollectionError(
+        token = token,
         error = error,
         event = codeCollector.failedEvent,
-        archiveDate = archiveDate)
+        archiveDate = archiveDate))
+    raise error
 
 def main():
   cursor = initDb(configService)
@@ -44,14 +47,10 @@ def main():
     accessTokens = f.readlines()
     
   with concurrent.futures.ThreadPoolExecutor(max_workers=len(accessTokens)) as executor:
-    futures = [executor.submit(execute, startDate + timedelta(hours = idx), len(accessTokens), token) 
+    futures = [executor.submit(execute, startDate + timedelta(hours = idx), len(accessTokens), token, mailService) 
       for idx, token in enumerate(accessTokens)]
     for future in concurrent.futures.as_completed(futures):
-      try:
-        future.result()
-      except CollectionError as error:
-        mailService.sendErrorMail(error)
-        raise error        
+      future.result()        
 
   mailService.sendSuccessMail(startDate, endDate)
 
