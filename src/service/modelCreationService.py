@@ -57,6 +57,7 @@ class ModelCreationService:
 
   def retrieveFile(self, url):
     try:
+      time.sleep(2)
       return requests.get(url).content.decode('utf-8', 'ignore')
     except requests.exceptions.ConnectionError:
       time.sleep(2)
