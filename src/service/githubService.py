@@ -107,30 +107,44 @@ class GithubService:
               commitSHAs.append(commit['commit']['oid'])
     return commitSHAs
 
-  def get(self, url):
-    time.sleep(2)
-    response = requests.get(url=url, headers=self.authHeader)
-    return self.respond(response, lambda: self.get(url))
-  
-  def post(self, url, body):
-    time.sleep(2)
-    response = requests.post(
-      url=url, headers=self.authHeader, data=body)
-    return self.respond(response, lambda: self.post(url, body))
+  def get(self, url, contentOnly = False):
+    try:
+      time.sleep(1)
+      response = requests.get(url=url, headers=self.authHeader)
+    except:
+      time.sleep(2)
+      response = requests.get(url=url, headers=self.authHeader)
     
-  def respond(self, response, httpRequest):
+    return self.respond(response, lambda: self.get(url), contentOnly)
+    
+  def post(self, url, body, contentOnly = False):
+    try:
+      time.sleep(1)
+      response = requests.post(
+        url=url, headers=self.authHeader, data=body)
+    except:
+      time.sleep(2)
+      response = requests.post(
+        url=url, headers=self.authHeader, data=body)
+
+    return self.respond(response, lambda: self.post(url, body), contentOnly)
+    
+  def respond(self, response, httpRequest, contentOnly = False):
     if response.status_code == 200:
-      return self.successResponse(response)
+      return self.successResponse(response, contentOnly)
     if response.status_code == 403:
       return self.authFailedResponse(response, httpRequest)
     self.failed = False
 
-  def successResponse(self, response):
+  def successResponse(self, response, contentOnly = False):
     self.failed = False
+    if contentOnly:
+      return response.content.decode('utf-8', 'ignore')
+
     try:
       return response.json()
     except ValueError as e:
-      return response.content
+      return response.content.decode('utf-8', 'ignore')
 
   def authFailedResponse(self, response, httpRequest):
     if self.failed:

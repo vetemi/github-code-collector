@@ -11,7 +11,12 @@ from src.model.issue import Issue
 from src.model.patch import Patch
 from src.model.repo import Repo
 
+from src.service.githubService import GithubService
+
 class ModelCreationService:
+
+  def __init__(self, githubService: GithubService):
+    self.githubService = githubService
 
   def createRepo(self, githubRepo):
     return Repo(
@@ -45,7 +50,7 @@ class ModelCreationService:
 
   def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
-    content = self.retrieveFile(githubFile['raw_url'])
+    content = self.githubService.get(url = githubFile['raw_url'], contentOnly = True)
     hash = mmh3.hash128(content, signed = True)
     return File(url = githubFile['raw_url'],
       github_id = githubFile['sha'],
@@ -54,11 +59,3 @@ class ModelCreationService:
       content = content,
       hash = hash,
       commitId = commitId)
-
-  def retrieveFile(self, url):
-    try:
-      time.sleep(2)
-      return requests.get(url).content.decode('utf-8', 'ignore')
-    except requests.exceptions.ConnectionError:
-      time.sleep(2)
-      return requests.get(url).content.decode('utf-8', 'ignore')

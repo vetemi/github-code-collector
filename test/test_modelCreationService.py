@@ -3,12 +3,20 @@ import requests
 import mmh3
 
 from src.service.modelCreationService import ModelCreationService
+from src.service.githubService import GithubService
+
+from test.testConfigService import TestConfigService
 
 class ModelCreationServiceTest(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
-    cls.modelCreator = ModelCreationService()
+    configService = TestConfigService()
+    with open(configService.config['github']['access-tokens']) as f:
+      accessTokens =  f.readlines()
+
+    githubService = GithubService(configService, accessTokens[0])
+    cls.modelCreator = ModelCreationService(githubService)
 
   def test_createRepo(self):
       github_id = 1

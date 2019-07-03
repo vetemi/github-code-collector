@@ -15,7 +15,7 @@ class CodeCollector():
     self.ghService = GithubService(configService, accessToken)
     self.dbService = DbService(configService)
     self.issueValidator = IssueValidator(configService)
-    self.modelCreator = ModelCreationService()
+    self.modelCreator = ModelCreationService(self.ghService)
     self.failedEvent = None
 
   def processFor(self, archiveDate):
