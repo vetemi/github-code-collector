@@ -108,25 +108,29 @@ class GithubService:
 
   def get(self, url, contentOnly = False):
     try:
-      time.sleep(1)
       response = requests.get(url=url, headers=self.authHeader)
-    except requests.exceptions.ConnectionError:
-      time.sleep(2)
+    except (requests.exceptions.ConnectionError, ConnectionRefusedError):
+      self.handleConnectionError()
       response = requests.get(url=url, headers=self.authHeader)
     
     return self.respond(response, lambda: self.get(url), contentOnly)
     
   def post(self, url, body, contentOnly = False):
     try:
-      time.sleep(1)
       response = requests.post(
         url=url, headers=self.authHeader, data=body)
-    except requests.exceptions.ConnectionError:
-      time.sleep(2)
+    except (requests.exceptions.ConnectionError, ConnectionRefusedError):
+      self.handleConnectionError()
       response = requests.post(
         url=url, headers=self.authHeader, data=body)
 
     return self.respond(response, lambda: self.post(url, body), contentOnly)
+
+  def handleConnectionError(self):
+    if self.failed:
+      raise InvalidTokenError(f'Connection refused multiple times: {self.authHeader}')
+    self.failed = True
+    time.sleep(61)
     
   def respond(self, response, httpRequest, contentOnly = False):
     if response.status_code == 200:
