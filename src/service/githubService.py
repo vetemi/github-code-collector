@@ -111,7 +111,7 @@ class GithubService:
     try:
       time.sleep(1)
       response = requests.get(url=url, headers=self.authHeader)
-    except:
+    except requests.exceptions.ConnectionError:
       time.sleep(2)
       response = requests.get(url=url, headers=self.authHeader)
     
@@ -122,7 +122,7 @@ class GithubService:
       time.sleep(1)
       response = requests.post(
         url=url, headers=self.authHeader, data=body)
-    except:
+    except requests.exceptions.ConnectionError:
       time.sleep(2)
       response = requests.post(
         url=url, headers=self.authHeader, data=body)
