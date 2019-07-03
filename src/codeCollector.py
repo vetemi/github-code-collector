@@ -38,7 +38,7 @@ class CodeCollector():
 
   def processEvent(self, event):
     repo = self.retrieveRepoFrom(event)
-    validIssue = self.retrieveValidIssueFrom(event, repo['name'])
+    validIssue = self.retrieveValidIssueFrom(event, repo)
     if validIssue:
       self.collectData(validIssue, repo)
 
@@ -48,11 +48,11 @@ class CodeCollector():
     if 'repository' in event:
       return event['repository']
 
-  def retrieveValidIssueFrom(self, event, repoName):
+  def retrieveValidIssueFrom(self, event, repo):
     if event['payload']['action'] == 'closed':
       issue = event['payload']['issue']
-      if isinstance(issue, int):
-        issue = self.ghService.retrieveIssue(repoName, issue)
+      if isinstance(issue, int) and 'name' in repo:
+        issue = self.ghService.retrieveIssue(repo['name'], issue)
       if issue and self.issueValidator.validBugIssue(issue):
         return issue
 
