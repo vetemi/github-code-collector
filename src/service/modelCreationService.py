@@ -1,5 +1,6 @@
 import requests
 import os
+import time
 
 import mmh3
 import langdetect
@@ -58,4 +59,5 @@ class ModelCreationService:
     try:
       return requests.get(url).content.decode('utf-8', 'ignore')
     except requests.exceptions.ConnectionError:
+      time.sleep(2)
       return requests.get(url).content.decode('utf-8', 'ignore')

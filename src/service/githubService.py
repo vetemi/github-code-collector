@@ -108,12 +108,12 @@ class GithubService:
     return commitSHAs
 
   def get(self, url):
-    time.sleep(1)
+    time.sleep(2)
     response = requests.get(url=url, headers=self.authHeader)
     return self.respond(response, lambda: self.get(url))
   
   def post(self, url, body):
-    time.sleep(1)
+    time.sleep(2)
     response = requests.post(
       url=url, headers=self.authHeader, data=body)
     return self.respond(response, lambda: self.post(url, body))
@@ -134,6 +134,7 @@ class GithubService:
 
   def authFailedResponse(self, response, httpRequest):
     if self.failed:
+      print(f'Response of multiple failing requests: {response}')
       self.mailService.sendAuthFailedMail(self.authHeader)
       raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
 
@@ -145,6 +146,7 @@ class GithubService:
   def calculateSleepTime(self, response):
     if 'Retry-After' in response.headers:
       waitTime = response.headers['Retry-After']
+      print(f'Retry-After is set to: {waitTime}')
       if waitTime and waitTime > 0:
         return waitTime + 5
 
