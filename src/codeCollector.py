@@ -1,6 +1,8 @@
 import concurrent.futures
 import json
 
+from src.model.patch import Patch
+
 from src.service.archiveService import ArchiveService
 from src.service.configService import ConfigService
 from src.service.dbService import DbService

@@ -148,7 +148,7 @@ class GithubService:
 
   def authFailedResponse(self, response, httpRequest):
     if self.failed:
-      print(f'Response of multiple failing requests: {response}')
+      print(f'Response of multiple failing requests: {response.content} and {response.url}')
       self.mailService.sendAuthFailedMail(self.authHeader)
       raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
 
