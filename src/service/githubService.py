@@ -147,15 +147,24 @@ class GithubService:
       return response.content.decode('utf-8', 'ignore')
 
   def authFailedResponse(self, response, httpRequest):
-    if self.failed:
-      print(f'Response of multiple failing requests: {response.content} and {response.url}')
-      self.mailService.sendAuthFailedMail(self.authHeader)
-      raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
+    if not self.unavailableReason(response):  
+      if self.failed:
+        print(f'Response of multiple failing requests: {response.content} and {response.url}')
+        self.mailService.sendAuthFailedMail(self.authHeader)
+        raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
 
-    self.failed = True
-    # Need to sleep because access token exceeded rate limit
-    time.sleep(self.calculateSleepTime(response))
-    return httpRequest()
+      self.failed = True
+      # Need to sleep because access token exceeded rate limit
+      time.sleep(self.calculateSleepTime(response))
+      return httpRequest()
+
+  def unavailableReason(self, response):
+    try:
+      body = response.json()
+      if 'block' in body:
+        return body['block']['reason'] == 'unavailable'
+    except ValueError as e:
+      return False
 
   def calculateSleepTime(self, response):
     if 'Retry-After' in response.headers:
