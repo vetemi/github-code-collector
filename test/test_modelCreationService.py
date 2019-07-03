@@ -43,6 +43,9 @@ class ModelCreationServiceTest(unittest.TestCase):
       'id' : github_id,
       'title' : title,
       'body' : body,
+      'labels': [
+        {'name' : 'bug'}
+      ],
       'url' : url
     }
     repoId = 2
@@ -53,6 +56,7 @@ class ModelCreationServiceTest(unittest.TestCase):
     self.assertEqual(created.github_id, github_id)
     self.assertEqual(created.body, body)
     self.assertEqual(created.title, title)
+    self.assertEqual(created.labeled, True)
     self.assertEqual(created.url, url)
     self.assertEqual(created.repoId, repoId)
 

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS issues (
   url VARCHAR(255) NOT NULL,
   title VARCHAR(255) NOT NULL,
   body TEXT,
+  labeled BOOLEAN DEFAULT TRUE,
   language VARCHAR(10),
   repository_id INT NOT NULL,
 

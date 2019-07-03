@@ -30,6 +30,7 @@ class ModelCreationService:
       github_id = githubIssue['id'],
       title = githubIssue['title'],
       body = githubIssue['body'],
+      labeled = 'labels' in githubIssue,
       language = lang,
       repoId = repoId)
 

@@ -65,6 +65,7 @@ class DbServiceTest(unittest.TestCase):
       github_id = 1, 
       title = 'testTitle1', 
       body = 'testBody1',
+      labeled = True,
       language = None,
       repoId = 1)
     expectedId = 1
@@ -79,6 +80,7 @@ class DbServiceTest(unittest.TestCase):
       github_id = 100, 
       title = 'test_addIssueNew', 
       body = 'test_addIssueNew',
+      labeled = True,
       language = 'de',
       repoId = 1)
 
@@ -92,6 +94,7 @@ class DbServiceTest(unittest.TestCase):
       github_id = 1, 
       title = 'testTitle1', 
       body = 'testBody1',
+      labeled = True
       language = 'de',
       repoId = 1)
     expectedId = 1
