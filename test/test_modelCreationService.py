@@ -18,17 +18,61 @@ class ModelCreationServiceTest(unittest.TestCase):
     githubService = GithubService(configService, accessTokens[0])
     cls.modelCreator = ModelCreationService(githubService)
 
+  def test_retrieveRepoFromWithRepository(self):
+    event = {
+      'repository' : {
+        'name' : 'test_retrieveRepoFromWithRepository'
+      }
+    }
+
+    repo = self.modelCreator.retrieveRepoFrom(event)
+
+    self.assertEqual(event['repository']['name'], repo['name'])
+
+  def test_retrieveRepoFromWithRepo(self):
+    event = {
+      'repo' : {
+        'name' : 'test_retrieveRepoFromWithRepo'
+      }
+    }
+
+    repo = self.modelCreator.retrieveRepoFrom(event)
+
+    self.assertEqual(event['repo']['name'], repo['name'])
+
+  def test_extractRepoNameAsWhole(self):
+    repo = {
+        'name' : 'test/test' 
+    }
+
+    result = self.modelCreator.extractRepoName(repo)
+
+    self.assertEqual(result, repo['name'])
+
+  def test_extractRepoNameComposed(self):
+    repoName = 'owner/name'
+    repo = {
+        'name' : 'name',
+        'owner' : 'owner'
+    }
+
+    result = self.modelCreator.extractRepoName(repo)
+
+    self.assertEqual(result, repoName)
+
   def test_createRepo(self):
       github_id = 1
       name = 'owner/repo'
       url = 'http://localhost'
-      repo = {
-        'id' : github_id,
-        'name' : name,
-        'url' : url
+      event = {
+        'repo' : {
+          'id' : github_id,
+          'name' : name,
+          'url' : url
+        }
       }
 
-      created = self.modelCreator.createRepo(repo)
+      created = self.modelCreator.createRepo(event)
 
       self.assertEqual(created.github_id, github_id)
       self.assertEqual(created.name, name)

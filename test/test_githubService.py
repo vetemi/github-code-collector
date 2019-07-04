@@ -1,5 +1,7 @@
 import unittest
 
+from src.model.repo import Repo
+
 from src.service.githubService import GithubService
 
 from test.testConfigService import TestConfigService
@@ -33,9 +35,11 @@ class GithubServiceTest(unittest.TestCase):
     self.assertEqual(len(commits), 0)
 
   def test_retrieveCommitsFromPullRequest(self):
-    repo = {
-      'name' : 'codeschluss/wupportal'
-    }
+    repo = Repo(
+      github_id = 1000,
+      url = 'someurl',
+      name = 'codeschluss/wupportal'
+    )
 
     issue = {
       'number' : 91
@@ -45,12 +49,16 @@ class GithubServiceTest(unittest.TestCase):
     
     self.assertEqual(len(commits), 9)
 
-  def test_retrieveValidIssueFromRequest(self):
+  def test_retrieveIssue(self):
     title = 'Duplicates when sorting'
-    repoName = 'codeschluss/wupportal'
+    repo = Repo(
+      github_id = 1000,
+      url = 'someurl',
+      name = 'codeschluss/wupportal'
+    )
     issueNumber = 98
 
-    issue = self.githubService.retrieveIssue(repoName, issueNumber)
+    issue = self.githubService.retrieveIssue(repo, issueNumber)
 
     self.assertEqual(title, issue['title'])
     

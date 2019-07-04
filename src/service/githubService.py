@@ -3,6 +3,8 @@ import json
 import requests
 import time
 
+from src.model.repo import Repo
+
 from src.error.InvalidTokenError import InvalidTokenError
 
 from src.service.configService import ConfigService
@@ -16,12 +18,13 @@ class GithubService:
     self.baseUrl = self.configService.config['github']['api-repos-url']
     self.failed = False
 
-  def retrieveIssue(self, repoName, issueNumber):
-    return self.get(f'{self.baseUrl}/{repoName}/issues/{issueNumber}')
+  def retrieveIssue(self, repo: Repo, issueNumber):
+    if repo and repo.name:
+      return self.get(f'{self.baseUrl}/{repo.name}/issues/{issueNumber}')
 
-  def retrieveCommits(self, issue, repo):
+  def retrieveCommits(self, issue, repo: Repo):
     commits = self.retrieveCommitsFromEvents(issue)
-    if not commits:
+    if not commits and repo:
       commits = self.retrieveCommitsFromPullRequest(issue, repo)
 
     return commits
@@ -48,7 +51,7 @@ class GithubService:
 
     return False
 
-  def retrieveCommitsFromPullRequest(self, issue, repo):
+  def retrieveCommitsFromPullRequest(self, issue, repo: Repo):
     response = self.post(
       self.configService.config['github']['graphql-url'],
       self.createQuery(issue, repo))
@@ -59,14 +62,14 @@ class GithubService:
       if commitSHAs:
         for commitSHA in commitSHAs:
           # This is necessary because it's not possible to retrieve the actual patches with GraphQL API
-          commit = self.get(f'{self.baseUrl}/{repo["name"]}/commits/{commitSHA}')
+          commit = self.get(f'{self.baseUrl}/{repo.name}/commits/{commitSHA}')
 
           if commit:
             commits.append(commit)
     return commits
 
-  def createQuery(self, issue, repo):
-    repoOwnerName = repo['name'].split('/')
+  def createQuery(self, issue, repo: Repo):
+    repoOwnerName = repo.name.split('/')
     query = 'query {' \
       f'repository(owner: "{repoOwnerName[0]}", name: "{repoOwnerName[1]}") {{' \
         f'issue(number: {issue["number"]}) {{' \

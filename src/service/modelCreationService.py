@@ -18,11 +18,24 @@ class ModelCreationService:
   def __init__(self, githubService: GithubService):
     self.githubService = githubService
 
-  def createRepo(self, githubRepo):
-    return Repo(
-      url = githubRepo['url'],
-      github_id = githubRepo['id'],
-      name = githubRepo['name']) 
+  def createRepo(self, event):
+    repo = self.retrieveRepoFrom(event)
+    if repo:
+      repoName = self.extractRepoName(repo)
+      return Repo(
+        url = repo['url'],
+        github_id = repo['id'],
+        name = repoName) 
+
+  def retrieveRepoFrom(self, event):
+    if 'repo' in event:
+      return event['repo']
+    elif 'repository' in event:
+      return event['repository']
+
+  def extractRepoName(self, repo):
+    return (repo['name'] if '/' in repo['name'] 
+      else f'{repo["owner"]}/{repo["name"]}')
 
   def createIssue(self, githubIssue, repoId):
     lang = self.detectLang(githubIssue['body'])

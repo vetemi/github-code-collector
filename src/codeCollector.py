@@ -28,39 +28,34 @@ class CodeCollector():
         lines = content.splitlines()
         for line in lines:
           event = json.loads(line)
-          if event['type'] == 'IssuesEvent':
+          if self.isValid(event):
             self.processEvent(event)
         self.dbService.addArchiveDate(archiveDate, True)
     except Exception as error:
       self.failedEvent = event
       self.dbService.addArchiveDate(archiveDate, False)
       raise error
+  
+  def isValid(self, event):
+    return event['type'] == 'IssuesEvent' and event['payload']['action'] == 'closed'
 
   def processEvent(self, event):
-    repo = self.retrieveRepoFrom(event)
-    validIssue = self.retrieveValidIssueFrom(event, repo)
-    if validIssue:
-      self.collectData(validIssue, repo)
+    repo = self.modelCreator.createRepo(event)
+    githubIssue = self.retrieveIssueFrom(event, repo)
+    if githubIssue:
+      self.collectData(githubIssue, repo)
 
-  def retrieveRepoFrom(self, event):
-    if 'repo' in event:
-      return event['repo']
-    if 'repository' in event:
-      return event['repository']
-
-  def retrieveValidIssueFrom(self, event, repo):
-    if event['payload']['action'] == 'closed':
-      issue = event['payload']['issue']
-      if isinstance(issue, int):
-        issue = (self.ghService.retrieveIssue(repo['name'], issue) if repo and 'name' in repo
-          else None) 
-      if issue and self.issueValidator.validBugIssue(issue):
-        return issue
+  def retrieveIssueFrom(self, event, repo):
+    issue = event['payload']['issue']
+    if isinstance(issue, int):
+      issue = self.ghService.retrieveIssue(repo, issue)
+    if issue and self.issueValidator.validBugIssue(issue):
+      return issue
 
   def collectData(self, issue, repo):
     commits = self.ghService.retrieveCommits(issue, repo)
     if commits:
-      repoId = self.dbService.addRepo(self.modelCreator.createRepo(repo))
+      repoId = self.dbService.addRepo(repo)
       issueId = self.dbService.addIssue(self.modelCreator.createIssue(issue, repoId))
       for commit in commits:
         commitId = self.dbService.addCommit(self.modelCreator.createCommit(commit, issueId))

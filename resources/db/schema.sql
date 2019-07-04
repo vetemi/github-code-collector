@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS issues (
   body TEXT,
   labeled BOOLEAN DEFAULT TRUE,
   language VARCHAR(10),
-  repository_id INT NOT NULL,
+  repository_id INT,
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),
   modified TIMESTAMP NOT NULL DEFAULT NOW(),
