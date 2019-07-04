@@ -168,7 +168,7 @@ class GithubService:
     try:
       body = response.json()
       if 'block' in body:
-        return body['block']['reason'] == 'unavailable'
+        return body['block']['reason'] == 'unavailable' or body['block']['reason'] == 'tos'
     except ValueError as e:
       return False
 

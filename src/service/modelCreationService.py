@@ -67,14 +67,15 @@ class ModelCreationService:
         pass
 
   def createFile(self, githubFile, commitId):
-    filename, fileExtension = os.path.splitext(githubFile['filename'])
     content = self.githubService.get(url = githubFile['raw_url'], contentOnly = True)
-    content = content.replace('0x00', '')
-    hash = mmh3.hash128(content, signed = True)
-    return File(url = githubFile['raw_url'],
-      github_id = githubFile['sha'],
-      name = filename,
-      extension = fileExtension,
-      content = content,
-      hash = hash,
-      commitId = commitId)
+    if content:
+      filename, fileExtension = os.path.splitext(githubFile['filename'])
+      content = content.replace('0x00', '')
+      hash = mmh3.hash128(content, signed = True)
+      return File(url = githubFile['raw_url'],
+        github_id = githubFile['sha'],
+        name = filename,
+        extension = fileExtension,
+        content = content,
+        hash = hash,
+        commitId = commitId)
