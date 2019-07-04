@@ -216,6 +216,18 @@ class DbServiceTest(unittest.TestCase):
 
     self.assertIsNone(result)
 
+  def test_deleteFailedArchiveDates(self):
+    selectQuery = 'select id from archive_dates where succeeded = False'
+    self.dbService.cursor.execute(selectQuery)
+    result = self.dbService.cursor.fetchall()
+    self.assertTrue(result)
+
+    DbService.deleteFailedArchiveDates(self.dbService.cursor, self.dbService.connection)
+
+    self.dbService.cursor.execute(selectQuery)
+    result = self.dbService.cursor.fetchall()
+    self.assertFalse(result)
+
   def assertInserted(self, entity, resultId):
     selectQuery = 'select id from %s where id = %s'  
 

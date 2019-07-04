@@ -16,6 +16,7 @@ configService = ConfigService()
 def initDb(configService):
   cursor, connection = DbService.getConnection(configService)
   DbService.initDb(configService, cursor, connection)
+  DbService.deleteFailedArchiveDates(cursor, connection)
   return cursor
 
 def execute(archiveDate, deltaSteps, token, mailService):

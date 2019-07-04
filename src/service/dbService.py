@@ -32,6 +32,11 @@ class DbService:
       cursor.execute(schema.read())
       connection.commit()
 
+  def deleteFailedArchiveDates(cursor, connection):
+    deleteStatement = 'delete from archive_dates where succeeded = False'
+    cursor.execute(deleteStatement)
+    connection.commit()
+
   def __init__(self, configService):
     self.configService = configService
     self.cursor, self.connection = DbService.getConnection(self.configService)

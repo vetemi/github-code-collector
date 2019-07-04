@@ -25,6 +25,7 @@ SELECT setval('patches_id_seq', (SELECT MAX(id) from "patches"));
 
 INSERT INTO archive_dates (id, date, succeeded) VALUES
 (1, '2019-06-22-00', TRUE),
-(2, '2100-06-22-00', TRUE);
+(2, '2100-06-22-00', TRUE),
+(3, '2019-08-22-00', FALSE);
 
 SELECT setval('archive_dates_id_seq', (SELECT MAX(id) from "archive_dates"));
