@@ -116,7 +116,8 @@ class GithubService:
       self.handleConnectionError()
       response = requests.get(url=url, headers=self.authHeader)
     
-    return self.respond(response, lambda: self.get(url), contentOnly)
+    if 'application/octet-stream' not in response.headers['content-type']:
+      return self.respond(response, lambda: self.get(url), contentOnly)
     
   def post(self, url, body, contentOnly = False):
     try:
