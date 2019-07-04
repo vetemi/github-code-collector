@@ -59,14 +59,13 @@ class CodeCollector():
       issueId = self.dbService.addIssue(self.modelCreator.createIssue(issue, repoId))
       for commit in commits:
         commitId = self.dbService.addCommit(self.modelCreator.createCommit(commit, issueId))
-        if commitId:
+        if commitId and 'files' in commit::
           self.collectFilepatches(commit, commitId)
 
   def collectFilepatches(self, commit, commitId):
-    if 'files' in commit:
-      for codeFile in commit['files']:
-        if (codeFile['raw_url'] and 'patch' in codeFile):
-          file = self.modelCreator.createFile(codeFile, commitId)
-          if file:
-            fileId = self.dbService.addFile(file)
-            self.dbService.addPatch(Patch(codeFile['patch'], fileId))   
+    for codeFile in commit['files']:
+      if (codeFile['raw_url'] and 'patch' in codeFile):
+        file = self.modelCreator.createFile(codeFile, commitId)
+        if file:
+          fileId = self.dbService.addFile(file)
+          self.dbService.addPatch(Patch(codeFile['patch'], fileId))   
