@@ -21,10 +21,14 @@ class ModelCreationService:
   def createRepo(self, event):
     repo = self.retrieveRepoFrom(event)
     if repo:
+      repoId = None
+      if 'id' in repo:
+        repoId = repo['id']
+        
       repoName = self.extractRepoName(repo)
       return Repo(
         url = repo['url'],
-        github_id = repo['id'],
+        github_id = repoId,
         name = repoName) 
 
   def retrieveRepoFrom(self, event):

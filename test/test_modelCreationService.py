@@ -60,7 +60,7 @@ class ModelCreationServiceTest(unittest.TestCase):
 
     self.assertEqual(result, repoName)
 
-  def test_createRepo(self):
+  def test_createRepoWithId(self):
       github_id = 1
       name = 'owner/repo'
       url = 'http://localhost'
@@ -75,6 +75,22 @@ class ModelCreationServiceTest(unittest.TestCase):
       created = self.modelCreator.createRepo(event)
 
       self.assertEqual(created.github_id, github_id)
+      self.assertEqual(created.name, name)
+      self.assertEqual(created.url, url)
+
+  def test_createRepoWithoutId(self):
+      name = 'owner/repo'
+      url = 'http://localhost'
+      event = {
+        'repo' : {
+          'name' : name,
+          'url' : url
+        }
+      }
+
+      created = self.modelCreator.createRepo(event)
+
+      self.assertIsNone(created.github_id)
       self.assertEqual(created.name, name)
       self.assertEqual(created.url, url)
 

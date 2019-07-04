@@ -51,8 +51,8 @@ class DbServiceTest(unittest.TestCase):
   def test_addRepoExisting(self):
     repo = Repo(
       url = 'testUrl1', 
-      github_id = 1, 
-      name = 'testUrl1')
+      github_id = None, 
+      name = 'testName1')
     expectedId = 1
 
     resultId = self.dbService.addRepo(repo)

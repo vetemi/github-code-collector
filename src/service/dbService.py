@@ -54,7 +54,7 @@ class DbService:
     insertQuery = 'insert into repositories(github_id, url, name) ' \
       'values (%s,%s,%s) returning id'
     params = (repo.github_id, repo.url, repo.name)
-    return self.saveInsert(insertQuery, params, repo, lambda: self.getById(repo))
+    return self.saveInsert(insertQuery, params, repo, lambda: self.getByName(repo))
 
   def addIssue(self, issue: Issue):
     insertQuery = 'insert into issues(github_id, url, title, body, labeled, language, repository_id)' \
@@ -95,6 +95,12 @@ class DbService:
       self.connection.rollback()
       if returnExisting:
         return returnExisting()[0]
+
+  def getByName(self, entity):
+    selectQuery = 'select id from %s where name = %s'  
+
+    self.cursor.execute(selectQuery, (AsIs(entity.table), entity.name))
+    return self.cursor.fetchone()
 
   def getById(self, entity):
     selectQuery = 'select id from %s where github_id = %s'  
