@@ -88,12 +88,12 @@ class CodeCollectorTest(unittest.TestCase):
     event = {
       'type' : 'IssuesEvent',
       'payload': {
-        'issue': 98,
-        'action': 'closed'
+        'issue': 46897,
+        'action': 'closed',
+        'number': 98
       }
     }
 
     issue = self.codeCollector.retrieveIssueFrom(event, repo)
 
     self.assertEqual(title, issue['title'])
-

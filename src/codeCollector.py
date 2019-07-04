@@ -48,7 +48,7 @@ class CodeCollector():
   def retrieveIssueFrom(self, event, repo):
     issue = event['payload']['issue']
     if isinstance(issue, int):
-      issue = self.ghService.retrieveIssue(repo, issue)
+      issue = self.ghService.retrieveIssue(repo, event['payload']['number'])
     if issue and self.issueValidator.validBugIssue(issue):
       return issue
 
