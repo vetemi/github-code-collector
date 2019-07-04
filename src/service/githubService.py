@@ -159,8 +159,9 @@ class GithubService:
         raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
 
       self.failed = True
-      # Need to sleep because access token exceeded rate limit
-      time.sleep(self.calculateSleepTime(response))
+      sleepTime = self.calculateSleepTime(response)
+      print(f'Need to sleep {sleepTime} s')
+      time.sleep(sleepTime)
       return httpRequest()
 
   def unavailableReason(self, response):
