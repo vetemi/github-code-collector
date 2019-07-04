@@ -24,7 +24,7 @@ class ModelCreationService:
       repoId = None
       if 'id' in repo:
         repoId = repo['id']
-        
+
       repoName = self.extractRepoName(repo)
       return Repo(
         url = repo['url'],
@@ -69,6 +69,7 @@ class ModelCreationService:
   def createFile(self, githubFile, commitId):
     filename, fileExtension = os.path.splitext(githubFile['filename'])
     content = self.githubService.get(url = githubFile['raw_url'], contentOnly = True)
+    content = content.replace('0x00', '')
     hash = mmh3.hash128(content, signed = True)
     return File(url = githubFile['raw_url'],
       github_id = githubFile['sha'],
