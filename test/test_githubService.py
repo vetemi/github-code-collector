@@ -16,6 +16,35 @@ class GithubServiceTest(unittest.TestCase):
 
     cls.githubService = GithubService(configService, accessTokens[0])
 
+
+  def test_getFailsBinary(self):
+    url = 'https://github.com/michail-nikolaev/task-force-arma-3-radio/raw/1a4602f3b2861457132a51f27dfa6317a1b8da9b/arma3/@task_force_radio/addons/task_force_radio/anprc152/152.paa'
+
+    result = self.githubService.get(url)
+
+    self.assertIsNone(result)
+
+  def test_getFailsPicture(self):
+    url = 'https://github.com/michail-nikolaev/task-force-arma-3-radio/raw/1a4602f3b2861457132a51f27dfa6317a1b8da9b/arma3/@task_force_radio/addons/task_force_radio/anprc152/152.png'
+
+    result = self.githubService.get(url)
+
+    self.assertIsNone(result)
+
+  def test_getFailsWav(self):
+    url = 'https://github.com/michail-nikolaev/task-force-arma-3-radio/raw/1a4602f3b2861457132a51f27dfa6317a1b8da9b/ts/radio-sounds/remote_start.wav'
+
+    result = self.githubService.get(url)
+
+    self.assertIsNone(result)
+
+  def test_getFailsRepoBlocked(self):
+    url = 'https://api.github.com/repos/mikedm139/UnSupportedAppstore.bundle/issues/20'
+
+    result = self.githubService.get(url)
+
+    self.assertIsNone(result)
+
   def test_retrieveCommitsFromEventsContaining(self):
     issue = {
       'events_url' : 'https://api.github.com/repos/websocket-client/websocket-client/issues/141/events'

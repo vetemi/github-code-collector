@@ -116,7 +116,8 @@ class GithubService:
       self.handleConnectionError()
       response = requests.get(url=url, headers=self.authHeader)
     
-    if 'application/octet-stream' not in response.headers['content-type']:
+    if ('text/plain' in response.headers['content-type']
+        or 'application/json' in response.headers['content-type']):
       return self.respond(response, lambda: self.get(url), contentOnly)
     
   def post(self, url, body, contentOnly = False):
@@ -154,7 +155,7 @@ class GithubService:
       return response.content.decode('utf-8', 'ignore')
 
   def authFailedResponse(self, response, httpRequest):
-    if not self.unavailableReason(response):  
+    if not self.repositoryAccessBlocked(response):  
       if self.failed:
         print(f'Response of multiple failing requests: {response.content} and {response.url}')
         raise InvalidTokenError(f'Token with Header is failing multiple times: {self.authHeader}')
@@ -165,11 +166,11 @@ class GithubService:
       time.sleep(sleepTime)
       return httpRequest()
 
-  def unavailableReason(self, response):
+  def repositoryAccessBlocked(self, response):
     try:
       body = response.json()
-      if 'block' in body:
-        return body['block']['reason'] == 'unavailable' or body['block']['reason'] == 'tos'
+      if 'message' in body:
+        return body['message'] == 'Repository access blocked'
     except ValueError as e:
       return False
 
