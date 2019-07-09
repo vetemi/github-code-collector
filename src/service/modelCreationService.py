@@ -45,8 +45,8 @@ class ModelCreationService:
     lang = self.detectLang(githubIssue['body'])
     return Issue(url = githubIssue['url'],
       github_id = githubIssue['id'],
-      title = githubIssue['title'],
-      body = githubIssue['body'],
+      title = self.removeNullLiterals(githubIssue['title']),
+      body = self.removeNullLiterals(githubIssue['body']),
       labeled = True if githubIssue['labels'] else False,
       language = lang,
       repoId = repoId)
@@ -75,6 +75,9 @@ class ModelCreationService:
         github_id = githubFile['sha'],
         name = filename,
         extension = fileExtension,
-        content = content,
+        content = self.removeNullLiterals(content),
         hash = hash,
         commitId = commitId)
+
+  def removeNullLiterals(self, text):
+    return text.replace('\x00', '').replace('\00', '').replace('\0', '')
