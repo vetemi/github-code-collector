@@ -80,4 +80,5 @@ class ModelCreationService:
         commitId = commitId)
 
   def removeNullLiterals(self, text):
-    return text.replace('\x00', '').replace('\00', '').replace('\0', '')
+    if text:
+      return text.replace('\x00', '').replace('\00', '').replace('\0', '')
