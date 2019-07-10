@@ -79,6 +79,9 @@ class ModelCreationService:
         hash = hash,
         commitId = commitId)
 
+  def createPatch(self, patchContent, fileId):
+    return Patch(self.removeNullLiterals(patchContent), fileId)
+
   def removeNullLiterals(self, text):
     if text:
       return text.replace('\x00', '').replace('\00', '').replace('\0', '')

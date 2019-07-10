@@ -164,3 +164,12 @@ class ModelCreationServiceTest(unittest.TestCase):
     self.assertEqual(created.extension, '.py')
     self.assertEqual(created.content, content)
     self.assertEqual(created.hash, hash)
+
+  def test_createPatch(self):
+    patch = 'patch'
+    fileId = 1
+    
+    created = self.modelCreator.createPatch(patch, fileId)
+
+    self.assertEqual(created.content, patch)
+    self.assertEqual(created.fileId, fileId)

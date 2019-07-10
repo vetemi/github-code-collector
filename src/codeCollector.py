@@ -68,4 +68,4 @@ class CodeCollector():
         file = self.modelCreator.createFile(codeFile, commitId)
         if file:
           fileId = self.dbService.addFile(file)
-          self.dbService.addPatch(Patch(codeFile['patch'], fileId))   
+          self.dbService.addPatch(self.modelCreator.createPatch(codeFile['patch'], fileId))   
