@@ -1,6 +1,6 @@
 SET client_encoding = 'UTF8';
 
-CREATE TABLE IF NOT EXISTS archive_dates (
+CREATE UNLOGGED TABLE IF NOT EXISTS archive_dates (
   id SERIAL NOT NULL PRIMARY KEY,
 
   date VARCHAR(20) UNIQUE NOT NULL, 
@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS archive_dates (
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),
   modified TIMESTAMP NOT NULL DEFAULT NOW()
-);
+) WITH (autovacuum_enabled=false);
 
-CREATE TABLE IF NOT EXISTS repositories (
+CREATE UNLOGGED TABLE IF NOT EXISTS repositories (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id INT, 
@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS repositories (
 
   created TIMESTAMP NOT NULL DEFAULT NOW(),
   modified TIMESTAMP NOT NULL DEFAULT NOW()
-);
+) WITH (autovacuum_enabled=false);
 
-CREATE TABLE IF NOT EXISTS issues (
+CREATE UNLOGGED TABLE IF NOT EXISTS issues (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id INT NOT NULL, 
@@ -41,9 +41,9 @@ CREATE TABLE IF NOT EXISTS issues (
 
   CONSTRAINT uq_issues 
       UNIQUE(github_id, url)
-);
+) WITH (autovacuum_enabled=false);
 
-CREATE TABLE IF NOT EXISTS commits (
+CREATE UNLOGGED TABLE IF NOT EXISTS commits (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id VARCHAR(255) NOT NULL, 
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS commits (
 
   CONSTRAINT uq_commits 
     UNIQUE(github_id, url)
-);
+) WITH (autovacuum_enabled=false);
 
-CREATE TABLE IF NOT EXISTS files (
+CREATE UNLOGGED TABLE IF NOT EXISTS files (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id VARCHAR(512) NOT NULL, 
@@ -83,9 +83,9 @@ CREATE TABLE IF NOT EXISTS files (
 
   CONSTRAINT uq_files_hash_extension 
     UNIQUE(hash, extension)
-);
+) WITH (autovacuum_enabled=false);
 
-CREATE TABLE IF NOT EXISTS patches (
+CREATE UNLOGGED TABLE IF NOT EXISTS patches (
   id SERIAL NOT NULL PRIMARY KEY,
 
   content TEXT NOT NULL,
@@ -97,4 +97,4 @@ CREATE TABLE IF NOT EXISTS patches (
   CONSTRAINT fkey_file_id
     FOREIGN KEY (file_id) REFERENCES files (id)
     ON UPDATE CASCADE
-);
+) WITH (autovacuum_enabled=false);
