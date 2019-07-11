@@ -1,6 +1,6 @@
 SET client_encoding = 'UTF8';
 
-CREATE UNLOGGED TABLE IF NOT EXISTS archive_dates (
+CREATE TABLE IF NOT EXISTS archive_dates (
   id SERIAL NOT NULL PRIMARY KEY,
 
   date VARCHAR(20) UNIQUE NOT NULL, 
@@ -10,7 +10,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS archive_dates (
   modified TIMESTAMP NOT NULL DEFAULT NOW()
 ) WITH (autovacuum_enabled=false);
 
-CREATE UNLOGGED TABLE IF NOT EXISTS repositories (
+CREATE TABLE IF NOT EXISTS repositories (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id INT, 
@@ -21,7 +21,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS repositories (
   modified TIMESTAMP NOT NULL DEFAULT NOW()
 ) WITH (autovacuum_enabled=false);
 
-CREATE UNLOGGED TABLE IF NOT EXISTS issues (
+CREATE TABLE IF NOT EXISTS issues (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id INT NOT NULL, 
@@ -43,7 +43,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issues (
       UNIQUE(github_id, url)
 ) WITH (autovacuum_enabled=false);
 
-CREATE UNLOGGED TABLE IF NOT EXISTS commits (
+CREATE TABLE IF NOT EXISTS commits (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id VARCHAR(255) NOT NULL, 
@@ -63,7 +63,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS commits (
     UNIQUE(github_id, url)
 ) WITH (autovacuum_enabled=false);
 
-CREATE UNLOGGED TABLE IF NOT EXISTS files (
+CREATE TABLE IF NOT EXISTS files (
   id SERIAL NOT NULL PRIMARY KEY,
 
   github_id VARCHAR(512) NOT NULL, 
@@ -85,7 +85,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS files (
     UNIQUE(hash, extension)
 ) WITH (autovacuum_enabled=false);
 
-CREATE UNLOGGED TABLE IF NOT EXISTS patches (
+CREATE TABLE IF NOT EXISTS patches (
   id SERIAL NOT NULL PRIMARY KEY,
 
   content TEXT NOT NULL,
