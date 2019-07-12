@@ -23,10 +23,8 @@ def execute(archiveDate, deltaSteps, token, mailService):
   try:
     codeCollector = CodeCollector(configService, token)
     delta = timedelta(hours = deltaSteps)
-    print(f'Thread with token started: {token}')
-    enddate = datetime(2014, 6, 17, 0)
-    while archiveDate < enddate:  
-    # while archiveDate < datetime.now():  
+    print(f'Thread with token started: {token}') 
+    while archiveDate < datetime.now():  
       codeCollector.processFor(archiveDate)
       archiveDate = archiveDate + delta
   except Exception as error:
