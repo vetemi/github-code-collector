@@ -116,6 +116,9 @@ class GithubService:
       self.handleConnectionError()
       response = requests.get(url=url, headers=self.authHeader)
     
+    if 'content-type' not in response.headers:
+      sleep(600)
+
     if ('text/plain' in response.headers['content-type']
         or 'application/json' in response.headers['content-type']):
       return self.respond(response, lambda: self.get(url), contentOnly)
