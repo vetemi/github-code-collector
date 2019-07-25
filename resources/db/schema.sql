@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS issues (
 
   github_id INT NOT NULL, 
   url VARCHAR(255) NOT NULL,
-  title VARCHAR(255) NOT NULL,
+  title VARCHAR(1024) NOT NULL,
   body TEXT,
   labeled BOOLEAN DEFAULT TRUE,
   language VARCHAR(10),
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS files (
   github_id VARCHAR(512) NOT NULL, 
   url VARCHAR(600) NOT NULL,
   name VARCHAR(600) NOT NULL,
-  extension VARCHAR(30) NOT NULL,
+  extension VARCHAR(100) NOT NULL,
   content TEXT NOT NULL,
   hash NUMERIC NOT NULL,
   commit_id INT NOT NULL,

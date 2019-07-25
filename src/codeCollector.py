@@ -1,5 +1,5 @@
-import concurrent.futures
 import json
+import gzip
 
 from src.model.patch import Patch
 
@@ -25,9 +25,8 @@ class CodeCollector():
     try:
       if not self.dbService.archiveDateExists(archiveDate):
         content = self.archiveService.retrieveData(archiveDate)
-        lines = content.splitlines()
-        for line in lines:
-          event = json.loads(line)
+        for line in content:
+          event = json.loads(line.decode())
           if self.isValid(event):
             self.processEvent(event)
         self.dbService.addArchiveDate(archiveDate, True)

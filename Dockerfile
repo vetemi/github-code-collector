@@ -1,7 +1,5 @@
-FROM python:3.6-stretch
+FROM code-collector-base:latest
 
 WORKDIR /code-collector
 
 COPY . /code-collector
-
-RUN pip install -r requirements.txt 

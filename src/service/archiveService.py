@@ -1,5 +1,6 @@
 from src.service.configService import ConfigService
-import gzip
+from gzip import GzipFile
+from io import BytesIO
 import requests
 
 class ArchiveService:
@@ -10,4 +11,4 @@ class ArchiveService:
   def retrieveData(self, date):
     response = requests.get(self.baseUrl + date.strftime('%Y-%m-%d-%-H') + '.json.gz')
     if response.status_code == 200:
-      return gzip.decompress(response.content)
+      return GzipFile(fileobj=BytesIO(response.content))
