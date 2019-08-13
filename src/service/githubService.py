@@ -165,7 +165,7 @@ class GithubService:
 
       self.failed = True
       sleepTime = self.calculateSleepTime(response)
-      print(f'Need to sleep {sleepTime} s')
+      print(f'Need to sleep {sleepTime} s, Token: {self.authHeader}')
       time.sleep(sleepTime)
       return httpRequest()
 
