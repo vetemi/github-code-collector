@@ -52,7 +52,7 @@ def main():
     for future in concurrent.futures.as_completed(futures):
       future.result()        
 
-  mailService.sendSuccessMail(startDate, endDate)
+  mailService.sendSuccessMail(startDate, datetime.now())
 
 if __name__== "__main__":
   main()
