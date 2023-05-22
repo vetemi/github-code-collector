@@ -4,5 +4,5 @@ ktext==0.34
 langdetect==1.0.7
 mmh3==2.5.1 
 psycopg2==2.8.3
-requests==2.22.0
+requests==2.31.0
 tensorflow==1.12.0
